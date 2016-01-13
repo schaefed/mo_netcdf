@@ -561,12 +561,12 @@ module mo_netcdf
 
      integer(i4)     :: id      !> The NetCDF dimension id
      type(NcDataset) :: parent  !> The dimension's parent
-     character(256)  :: name    !> The dimension's name
 
    contains
 
      procedure, public :: initNcDimension
-
+     
+     procedure, public :: getName => getDimensionName
      ! -----------------------------------------------------------------------------------
      !
      !     NAME
@@ -1244,15 +1244,13 @@ contains
     self%parent = parent
   end subroutine initNcVariable
 
-  subroutine initNcDimension(self, id, parent, name)
+  subroutine initNcDimension(self, id, parent)
     class(NcDimension), intent(inout) :: self
     integer(i4)       , intent(in)    :: id
     type(NcDataset)   , intent(in)    :: parent
-    character(*)      , intent(in)    :: name
 
     self%id     = id
     self%parent = parent
-    self%name   = name
   end subroutine initNcDimension
 
   subroutine initNcDataset(self, fname, mode)
@@ -1285,12 +1283,11 @@ contains
     call newNcVariable%initNcVariable(id, parent)
   end function newNcVariable
 
-  type(NcDimension) function newNcDimension(id, parent, name)
+  type(NcDimension) function newNcDimension(id, parent)
     integer(i4)    , intent(in) :: id
     type(NcDataset), intent(in) :: parent
-    character(*)   , intent(in) :: name
 
-    call newNcDimension%initNcDimension(id, parent, name)
+    call newNcDimension%initNcDimension(id, parent)
   end function newNcDimension
 
   type(NcDataset) function newNcDataset(fname, mode)
@@ -1336,12 +1333,20 @@ contains
     
   end function getVariables
   
+  function getDimensionName(self)
+    class(NcDimension), intent(in) :: self
+    character(len=256)             :: getDimensionName
+
+    call check(nf90_inquire_dimension(self%parent%id, self%id, name=getDimensionName), &
+         "Failed to inquire dimension name")
+  end function getDimensionName
+
   function getDimensionLength(self)
     class(NcDimension), intent(in) :: self
     integer(i4)                    :: getDimensionLength
 
     call check(nf90_inquire_dimension(self%parent%id,self%id,len=getDimensionLength),&
-         "Failed to inquire dimension: "//self%name)
+         "Failed to inquire dimension: "//self%getName())
   end function getDimensionLength
 
   function isDatasetUnlimited(self)
@@ -1402,7 +1407,7 @@ contains
     call check(nf90_def_dim(self%id, name, dimlength, id), &
          "Failed to create dimension: " // name)
 
-    setDimension = NcDimension(id,self,trim(name))
+    setDimension = NcDimension(id,self)
   end function setDimension
 
   function hasVariable(self, name)
@@ -1502,7 +1507,7 @@ contains
     write(msg,*) id
     call check(nf90_inquire_dimension(self%id,id,name), &
          "Could not inquire dimension: " // msg)
-    getDimensionById = NcDimension(id,self,name)
+    getDimensionById = NcDimension(id,self)
   end function getDimensionById
 
   function getDimensionByName(self, name)
