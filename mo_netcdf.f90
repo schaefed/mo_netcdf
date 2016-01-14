@@ -37,15 +37,15 @@ module mo_netcdf
 
   ! Copyright 2011-2015 David Schaefer
 
-  use mo_kind,         only: i2, i4, sp, dp
+  use mo_kind,         only: i1, i2, i4, sp, dp
   use netcdf,          only: &
        nf90_open, nf90_close, nf90_strerror, nf90_def_dim, nf90_def_var,   &
        nf90_put_var, nf90_get_var, nf90_put_att, nf90_get_att,             &
        nf90_inquire, nf90_inq_dimid, nf90_inquire_dimension,               &
        nf90_inq_varid, nf90_inq_varids, nf90_inquire_variable, nf90_inquire_attribute,      &
        NF90_OPEN, NF90_NETCDF4, NF90_CREATE, NF90_WRITE, NF90_NOWRITE,     &
-       NF90_SHORT, NF90_INT, NF90_FLOAT, NF90_DOUBLE,                      &
-       NF90_FILL_SHORT, NF90_FILL_INT, NF90_FILL_FLOAT , NF90_FILL_DOUBLE, &
+       NF90_BYTE, NF90_SHORT, NF90_INT, NF90_FLOAT, NF90_DOUBLE,                      &
+       NF90_FILL_BYTE, NF90_FILL_SHORT, NF90_FILL_INT, NF90_FILL_FLOAT , NF90_FILL_DOUBLE, &
        NF90_NOERR, NF90_UNLIMITED, NF90_GLOBAL
 
 
@@ -104,12 +104,14 @@ module mo_netcdf
      procedure, public  :: getVariables
      
      procedure, private :: setGlobalAttributeChar
+     procedure, private :: setGlobalAttributeI8
      procedure, private :: setGlobalAttributeI16
      procedure, private :: setGlobalAttributeI32
      procedure, private :: setGlobalAttributeF32
      procedure, private :: setGlobalAttributeF64
 
      procedure, private :: getGlobalAttributeChar
+     procedure, private :: getGlobalAttributeI8
      procedure, private :: getGlobalAttributeI16
      procedure, private :: getGlobalAttributeI32
      procedure, private :: getGlobalAttributeF32
@@ -352,6 +354,7 @@ module mo_netcdf
      ! -----------------------------------------------------------------------------------
      generic,   public  :: setAttribute => &
           setGlobalAttributeChar, &
+          setGlobalAttributeI8,   &
           setGlobalAttributeI16,   &
           setGlobalAttributeI32,   &
           setGlobalAttributeF32,   &
@@ -390,6 +393,7 @@ module mo_netcdf
      ! -----------------------------------------------------------------------------------
      generic,   public  :: getAttribute => &
           getGlobalAttributeChar, &
+          getGlobalAttributeI8,   &
           getGlobalAttributeI16,   &
           getGlobalAttributeI32,   &
           getGlobalAttributeF32,   &
@@ -442,6 +446,7 @@ module mo_netcdf
      !>                 The program will teminate abruptly if the variable cannot be
      !>                 created.
      !>                 Supported data types and their string encodings:
+     !>                     NF90_BYTE   -> "i8"
      !>                     NF90_SHORT  -> "i16"
      !>                     NF90_INT    -> "i32"
      !>                     NF90_FLOAT  -> "f32"
@@ -686,17 +691,25 @@ module mo_netcdf
      procedure, public  :: getName => getVariableName
      
      procedure, private :: setVariableAttributeChar
+     procedure, private :: setVariableAttributeI8
      procedure, private :: setVariableAttributeI16
      procedure, private :: setVariableAttributeI32
      procedure, private :: setVariableAttributeF32
      procedure, private :: setVariableAttributeF64
 
      procedure, private :: getVariableAttributeChar
+     procedure, private :: getVariableAttributeI8
      procedure, private :: getVariableAttributeI16
      procedure, private :: getVariableAttributeI32
      procedure, private :: getVariableAttributeF32
      procedure, private :: getVariableAttributeF64
 
+     procedure, private :: setDataScalarI8
+     procedure, private :: setData1dI8
+     procedure, private :: setData2dI8
+     procedure, private :: setData3dI8
+     procedure, private :: setData4dI8
+     procedure, private :: setData5dI8
      procedure, private :: setDataScalarI16
      procedure, private :: setData1dI16
      procedure, private :: setData2dI16
@@ -722,6 +735,12 @@ module mo_netcdf
      procedure, private :: setData4dF64
      procedure, private :: setData5dF64
 
+     procedure, private :: getDataScalarI8
+     procedure, private :: getData1dI8
+     procedure, private :: getData2dI8
+     procedure, private :: getData3dI8
+     procedure, private :: getData4dI8
+     procedure, private :: getData5dI8
      procedure, private :: getDataScalarI16
      procedure, private :: getData1dI16
      procedure, private :: getData2dI16
@@ -747,11 +766,13 @@ module mo_netcdf
      procedure, private :: getData4dF64
      procedure, private :: getData5dF64
 
+     procedure, private :: setVariableFillValueI8
      procedure, private :: setVariableFillValueI16
      procedure, private :: setVariableFillValueI32
      procedure, private :: setVariableFillValueF32
      procedure, private :: setVariableFillValueF64
 
+     procedure, private :: getVariableFillValueI8
      procedure, private :: getVariableFillValueI16
      procedure, private :: getVariableFillValueI32
      procedure, private :: getVariableFillValueF32
@@ -861,6 +882,7 @@ module mo_netcdf
      !>                 Data type encodeings
      !>                     "f32" -> NF90_FLOAT
      !>                     "f64" -> NF90_DOUBLE
+     !>                     "i8"  -> NF90_BYTE
      !>                     "i16" -> NF90_SHORT
      !>                     "i32" -> NF90_INT
      !>                     "i64" -> NF90_INT64
@@ -988,6 +1010,12 @@ module mo_netcdf
      !
      ! -----------------------------------------------------------------------------------
      generic, public :: setData => &
+          setDataScalarI8, &
+          setData1dI8, &
+          setData2dI8, &
+          setData3dI8, &
+          setData4dI8, &
+          setData5dI8, &
           setDataScalarI16, &
           setData1dI16, &
           setData2dI16, &
@@ -1050,6 +1078,12 @@ module mo_netcdf
      !
      ! -----------------------------------------------------------------------------------
      generic, public :: getData => &
+          getDataScalarI8, &
+          getData1dI8, &
+          getData2dI8, &
+          getData3dI8, &
+          getData4dI8, &
+          getData5dI8, &
           getDataScalarI16, &
           getData1dI16, &
           getData2dI16, &
@@ -1109,6 +1143,7 @@ module mo_netcdf
      !
      ! -----------------------------------------------------------------------------------
           generic, public :: setFillValue => &
+          setVariableFillValueI8, &
           setVariableFillValueI16, &
           setVariableFillValueI32, &
           setVariableFillValueF32, &
@@ -1146,6 +1181,7 @@ module mo_netcdf
      !
      ! -----------------------------------------------------------------------------------
      generic, public :: getFillValue => &
+          getVariableFillValueI8, &
           getVariableFillValueI16, &
           getVariableFillValueI32, &
           getVariableFillValueF32, &
@@ -1184,6 +1220,7 @@ module mo_netcdf
      ! -----------------------------------------------------------------------------------
      generic, public :: setAttribute => &
           setVariableAttributeChar, &
+          setVariableAttributeI8,   &
           setVariableAttributeI16,   &
           setVariableAttributeI32,   &
           setVariableAttributeF32,   &
@@ -1222,6 +1259,7 @@ module mo_netcdf
      ! -----------------------------------------------------------------------------------
      generic, public :: getAttribute => &
           getVariableAttributeChar, &
+          getVariableAttributeI8,   &
           getVariableAttributeI16,   &
           getVariableAttributeI32,   &
           getVariableAttributeF32,   &
@@ -1626,6 +1664,15 @@ contains
          "Failed to write attribute: " // name )
   end subroutine setGlobalAttributeChar
 
+  subroutine setGlobalAttributeI8(self, name, data)
+    class(NcDataset), intent(in) :: self
+    character(*)    , intent(in) :: name
+    integer(i1)     , intent(in) :: data
+
+    call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
+         "Failed to write attribute: " // name )
+  end subroutine setGlobalAttributeI8
+
   subroutine setGlobalAttributeI16(self, name, data)
     class(NcDataset), intent(in) :: self
     character(*)    , intent(in) :: name
@@ -1673,6 +1720,18 @@ contains
     call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
          "Could not read attribute "//name)
   end subroutine getGlobalAttributeChar
+
+  subroutine getGlobalAttributeI8(self, name, avalue)
+    class(NcDataset), intent(in)  :: self
+    character(*)    , intent(in)  :: name
+    integer(i1)     , intent(out) :: avalue
+    integer(i4)                   :: length
+
+    call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
+         "Could not inquire attribute "//name)
+    call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+         "Could not read attribute "//name)
+  end subroutine getGlobalAttributeI8
 
   subroutine getGlobalAttributeI16(self, name, avalue)
     class(NcDataset), intent(in)  :: self
@@ -1731,6 +1790,15 @@ contains
          "Failed to write attribute: " // name )
   end subroutine setVariableAttributeChar
 
+  subroutine setVariableAttributeI8(self, name, data)
+    class(NcVariable), intent(in) :: self
+    character(*)     , intent(in) :: name
+    integer(i1)      , intent(in) :: data
+
+    call check(nf90_put_att(self%parent%id,self%id,name,data), &
+         "Failed to write attribute: " // name )
+  end subroutine setVariableAttributeI8
+  
   subroutine setVariableAttributeI16(self, name, data)
     class(NcVariable), intent(in) :: self
     character(*)     , intent(in) :: name
@@ -1778,6 +1846,18 @@ contains
     call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
          "Could not read attribute "//name)
   end subroutine getVariableAttributeChar
+
+  subroutine getVariableAttributeI8(self, name, avalue)
+    class(NcVariable), intent(in)  :: self
+    character(*)     , intent(in)  :: name
+    integer(i1)      , intent(out) :: avalue
+    integer(i4)                    :: length
+
+    call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
+         "Could not inquire attribute "//name)
+    call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
+         "Could not read attribute "//name)
+  end subroutine getVariableAttributeI8
 
   subroutine getVariableAttributeI16(self, name, avalue)
     class(NcVariable), intent(in)  :: self
@@ -1827,6 +1907,15 @@ contains
          "Could not read attribute "//name)
   end subroutine getVariableAttributeF64
 
+  subroutine setVariableFillValueI8(self, fvalue)
+    class(NcVariable), intent(in)  :: self
+    integer(i1)      , intent(in)  :: fvalue
+
+    if (.not. self%hasAttribute("_FillValue")) then
+       call self%setAttribute("_FillValue",fvalue)
+    end if
+  end subroutine setVariableFillValueI8
+  
   subroutine setVariableFillValueI16(self, fvalue)
     class(NcVariable), intent(in)  :: self
     integer(i2)      , intent(in)  :: fvalue
@@ -1862,6 +1951,17 @@ contains
        call self%setAttribute("_FillValue",fvalue)
     end if
   end subroutine setVariableFillValueF64
+
+  subroutine getVariableFillValueI8(self, fvalue)
+    class(NcVariable), intent(in)  :: self
+    integer(i1)      , intent(out) :: fvalue
+
+    if (self%hasAttribute("_FillValue")) then
+       call self%getAttribute("_FillValue", fvalue)
+    else
+       fvalue = NF90_FILL_BYTE
+    end if
+  end subroutine getVariableFillValueI8
 
   subroutine getVariableFillValueI16(self, fvalue)
     class(NcVariable), intent(in)  :: self
@@ -1906,6 +2006,60 @@ contains
        fvalue = NF90_FILL_DOUBLE
     end if
   end subroutine getVariableFillValueF64
+
+  subroutine setDataScalarI8(self, values, start)
+    class(NcVariable), intent(in)           :: self
+    integer(i1)      , intent(in)           :: values
+    integer(i4)      , intent(in), optional :: start(:)
+
+    call check( nf90_put_var(self%parent%id, self%id, values, start), &
+         "Failed to write data into variable: " // trim(self%getName()))
+  end subroutine setDataScalarI8
+
+  subroutine setData1dI8(self, values, start, count, stride, map)
+    class(NcVariable), intent(in)           :: self
+    integer(i1)      , intent(in)           :: values(:)
+    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+
+    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+         "Failed to write data into variable: " // trim(self%getName()))
+  end subroutine setData1dI8
+
+  subroutine setData2dI8(self, values, start, count, stride, map)
+    class(NcVariable), intent(in)           :: self
+    integer(i1)      , intent(in)           :: values(:,:)
+    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+
+    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+         "Failed to write data into variable: " // trim(self%getName()))
+  end subroutine setData2dI8
+
+  subroutine setData3dI8(self, values, start, count, stride, map)
+    class(NcVariable), intent(in)           :: self
+    integer(i1)      , intent(in)           :: values(:,:,:)
+    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+
+    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+         "Failed to write data into variable: " // trim(self%getName()))
+  end subroutine setData3dI8
+
+  subroutine setData4dI8(self, values, start, count, stride, map)
+    class(NcVariable), intent(in)           :: self
+    integer(i1)      , intent(in)           :: values(:,:,:,:)
+    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+
+    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+         "Failed to write data into variable: " // trim(self%getName()))
+  end subroutine setData4dI8
+
+  subroutine setData5dI8(self, values, start, count, stride, map)
+    class(NcVariable), intent(in)           :: self
+    integer(i1)      , intent(in)           :: values(:,:,:,:,:)
+    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+
+    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+         "Failed to write data into variable: " // trim(self%getName()))
+  end subroutine setData5dI8
 
   subroutine setDataScalarI16(self, values, start)
     class(NcVariable), intent(in)           :: self
@@ -2122,6 +2276,82 @@ contains
     call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData5dF64
+
+  subroutine getDataScalarI8(self, data, start, count, stride, map)
+    class(NcVariable), intent(in)               :: self
+    integer(i4)      , intent(in) , optional    :: start(:), count(:), stride(:), map(:)
+    integer(i1)      , intent(out)              :: data
+    integer(i1)                                 :: tmp(1)
+
+    call check (nf90_get_var(self%parent%id, self%id, tmp, start, count, stride, map), &
+         "Could not read data from variable: "//trim(self%getName()))
+    data = tmp(1)
+  end subroutine getDataScalarI8
+
+  subroutine getData1dI8(self, data, start, count, stride, map)
+    class(NcVariable), intent(in)               :: self
+    integer(i4)      , intent(in) , optional    :: start(:), count(:), stride(:), map(:)
+    integer(i1)      , intent(out), allocatable :: data(:)
+    integer(i4)                   , allocatable :: datashape(:)
+
+    datashape = getReadDataShape(self,1,start,count,stride)
+    allocate(data(datashape(1)) )
+
+    call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
+         "Could not read data from variable: "//trim(self%getName()))
+  end subroutine getData1dI8
+
+  subroutine getData2dI8(self, data, start, count, stride, map)
+    class(NcVariable), intent(in)               :: self
+    integer(i4)      , intent(in) , optional    :: start(:), count(:), stride(:), map(:)
+    integer(i1)      , intent(out), allocatable :: data(:,:)
+    integer(i4)                   , allocatable :: datashape(:)
+
+    datashape = getReadDataShape(self,2,start,count,stride)
+    allocate(data(datashape(1),datashape(2)))
+
+    call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
+         "Could not read data from variable: "//trim(self%getName()))
+  end subroutine getData2dI8
+
+  subroutine getData3dI8(self, data, start, count, stride, map)
+    class(NcVariable), intent(in)               :: self
+    integer(i4)      , intent(in) , optional    :: start(:), count(:), stride(:), map(:)
+    integer(i1)      , intent(out), allocatable :: data(:,:,:)
+    integer(i4)                   , allocatable :: datashape(:)
+
+    datashape = getReadDataShape(self,3,start,count,stride)
+    allocate(data(datashape(1),datashape(2),datashape(3)))
+
+    call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
+         "Could not read data from variable: "//trim(self%getName()))
+  end subroutine getData3dI8
+
+  subroutine getData4dI8(self, data, start, count, stride, map)
+    class(NcVariable), intent(in)               :: self
+    integer(i4)      , intent(in) , optional    :: start(:), count(:), stride(:), map(:)
+    integer(i1)      , intent(out), allocatable :: data(:,:,:,:)
+    integer(i4)                   , allocatable :: datashape(:)
+
+    datashape = getReadDataShape(self,3,start,count,stride)
+    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4)))
+
+    call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
+         "Could not read data from variable: "//trim(self%getName()))
+  end subroutine getData4dI8
+
+  subroutine getData5dI8(self, data, start, count, stride, map)
+    class(NcVariable), intent(in)               :: self
+    integer(i4)      , intent(in) , optional    :: start(:), count(:), stride(:), map(:)
+    integer(i1)      , intent(out), allocatable :: data(:,:,:,:,:)
+    integer(i4)                   , allocatable :: datashape(:)
+
+    datashape = getReadDataShape(self,3,start,count,stride)
+    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4),datashape(5)))
+
+    call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
+         "Could not read data from variable: "//trim(self%getName()))
+  end subroutine getData5dI8
 
   subroutine getDataScalarI16(self, data, start, count, stride, map)
     class(NcVariable), intent(in)               :: self
@@ -2463,6 +2693,8 @@ contains
        getDtypeFromString = NF90_FLOAT
     case("f64")
        getDtypeFromString = NF90_DOUBLE
+    case("i8")
+       getDtypeFromString = NF90_BYTE
     case("i16")
        getDtypeFromString = NF90_SHORT
     case("i32")
@@ -2482,6 +2714,8 @@ contains
        getDtypeFromInteger = "f32"
     case(NF90_DOUBLE)
        getDtypeFromInteger = "f64"
+    case(NF90_BYTE)
+       getDtypeFromInteger = "i8"
     case(NF90_SHORT)
        getDtypeFromInteger = "i16"
     case(NF90_INT)
