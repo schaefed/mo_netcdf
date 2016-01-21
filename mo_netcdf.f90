@@ -17,6 +17,9 @@ module mo_netcdf
   ! This module provides a thin wrapper around the NetCDF Fortran 90 interface,
   ! following a somehow object-oriented approach.
 
+  ! Written  David Schaefer, Jun 2015
+  ! Modified Matthias Cuntz, Jan 2016 - compiled with PGI Fortran rev 15.9 - no automatic allocation of left-hand-side
+  
   ! License
   ! -------
   ! This file is part of the UFZ Fortran library.
