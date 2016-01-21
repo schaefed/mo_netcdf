@@ -1361,9 +1361,11 @@ contains
     class(NcDataset), intent(in)                :: self
     type(NcVariable), dimension(:), allocatable :: getVariables
     integer(i4), dimension(:), allocatable      :: varids
-    integer(i4)                                 :: i
-    
-    allocate(getVariables(self%getNoVariables()))
+    integer(i4)                                 :: i, nvars
+
+    nvars = self%getNoVariables()
+    allocate(getVariables(nvars), varids(nvars))
+
     varids = self%getVariableIds()
     do i=1,size(varids)
        getVariables(i) = NcVariable(varids(i), self)
@@ -1587,14 +1589,14 @@ contains
          "Could not inquire variable: " // self%getName())
   end function getNoDimensions
 
-  function getVariableDimensions (self)
+  function getVariableDimensions(self)
     class(NcVariable), intent(in)  :: self
     type(NcDimension), allocatable :: getVariableDimensions(:)
     integer(i4)      , allocatable :: dimids(:)
     integer(i4)                    :: ii , ndims
 
     ndims = self%getNoDimensions()
-    allocate(dimids(ndims),getVariableDimensions (ndims))
+    allocate(dimids(ndims), getVariableDimensions(ndims))
     call check(nf90_inquire_variable(self%parent%id,self%id,dimids=dimids), &
          "Could not inquire variable: " // self%getName())
 
@@ -1607,11 +1609,12 @@ contains
     class(NcVariable), intent(in)  :: self
     integer(i4)      , allocatable :: getVariableShape(:)
     type(NcDimension), allocatable :: dims(:)
-    integer(i4)                    :: ii
+    integer(i4)                    :: ii, ndims
+
+    ndims = self%getNoDimensions()
+    allocate(getVariableShape(ndims), dims(ndims))
 
     dims = self%getDimensions()
-    allocate(getVariableShape(size(dims)))
-
     do ii = 1,size(dims)
        getVariableShape(ii) = dims(ii)%getLength()
     end do
@@ -1633,6 +1636,8 @@ contains
     type(NcDimension), allocatable :: dims(:)
     type(NcDimension)              :: dim
     integer(i4)                    :: ii
+
+    allocate(dims(self%getNoDimensions()))
 
     isUnlimitedVariable = .false.
     dims = self%getDimensions()
@@ -2294,9 +2299,10 @@ contains
     integer(i1)      , intent(out), allocatable :: data(:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,1,start,count,stride)
-    allocate(data(datashape(1)) )
+    allocate(datashape(1))
+    datashape = getReadDataShape(self, 1, start, count, stride)
 
+    allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData1dI8
@@ -2307,9 +2313,10 @@ contains
     integer(i1)      , intent(out), allocatable :: data(:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,2,start,count,stride)
-    allocate(data(datashape(1),datashape(2)))
+    allocate(datashape(2))
+    datashape = getReadDataShape(self, 2, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData2dI8
@@ -2320,9 +2327,10 @@ contains
     integer(i1)      , intent(out), allocatable :: data(:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3)))
+    allocate(datashape(3))
+    datashape = getReadDataShape(self, 3, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData3dI8
@@ -2333,9 +2341,10 @@ contains
     integer(i1)      , intent(out), allocatable :: data(:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4)))
+    allocate(datashape(4))
+    datashape = getReadDataShape(self, 4, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData4dI8
@@ -2346,9 +2355,10 @@ contains
     integer(i1)      , intent(out), allocatable :: data(:,:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4),datashape(5)))
+    allocate(datashape(5))
+    datashape = getReadDataShape(self, 5, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData5dI8
@@ -2370,9 +2380,10 @@ contains
     integer(i2)      , intent(out), allocatable :: data(:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,1,start,count,stride)
-    allocate(data(datashape(1)) )
+    allocate(datashape(1))
+    datashape = getReadDataShape(self, 1, start, count, stride)
 
+    allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData1dI16
@@ -2383,9 +2394,10 @@ contains
     integer(i2)      , intent(out), allocatable :: data(:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,2,start,count,stride)
-    allocate(data(datashape(1),datashape(2)))
+    allocate(datashape(2))
+    datashape = getReadDataShape(self, 2, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData2dI16
@@ -2396,9 +2408,10 @@ contains
     integer(i2)      , intent(out), allocatable :: data(:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3)))
+    allocate(datashape(3))
+    datashape = getReadDataShape(self, 3, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData3dI16
@@ -2409,9 +2422,10 @@ contains
     integer(i2)      , intent(out), allocatable :: data(:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4)))
+    allocate(datashape(4))
+    datashape = getReadDataShape(self, 4, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData4dI16
@@ -2422,9 +2436,10 @@ contains
     integer(i2)      , intent(out), allocatable :: data(:,:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4),datashape(5)))
+    allocate(datashape(5))
+    datashape = getReadDataShape(self, 5, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData5dI16
@@ -2446,9 +2461,10 @@ contains
     integer(i4)      , intent(out), allocatable :: data(:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,1,start,count,stride)
-    allocate(data(datashape(1)) )
+    allocate(datashape(1))
+    datashape = getReadDataShape(self, 1, start, count, stride)
 
+    allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData1dI32
@@ -2459,9 +2475,10 @@ contains
     integer(i4)      , intent(out), allocatable :: data(:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,2,start,count,stride)
-    allocate(data(datashape(1),datashape(2)))
+    allocate(datashape(2))
+    datashape = getReadDataShape(self, 2, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData2dI32
@@ -2472,9 +2489,10 @@ contains
     integer(i4)      , intent(out), allocatable :: data(:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3)))
+    allocate(datashape(3))
+    datashape = getReadDataShape(self, 3, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData3dI32
@@ -2485,9 +2503,10 @@ contains
     integer(i4)      , intent(out), allocatable :: data(:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4)))
+    allocate(datashape(4))
+    datashape = getReadDataShape(self, 4, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData4dI32
@@ -2498,9 +2517,10 @@ contains
     integer(i4)      , intent(out), allocatable :: data(:,:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4),datashape(5)))
+    allocate(datashape(5))
+    datashape = getReadDataShape(self, 5, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData5dI32
@@ -2522,9 +2542,10 @@ contains
     real(sp)         , intent(out), allocatable :: data(:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,1,start,count,stride)
-    allocate(data(datashape(1)))
+    allocate(datashape(1))
+    datashape = getReadDataShape(self, 1, start, count, stride)
 
+    allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData1dF32
@@ -2535,9 +2556,10 @@ contains
     real(sp)         , intent(out), allocatable :: data(:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,2,start,count,stride)
-    allocate(data(datashape(1),datashape(2)))
+    allocate(datashape(2))
+    datashape = getReadDataShape(self, 2, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData2dF32
@@ -2548,9 +2570,10 @@ contains
     real(sp)         , intent(out), allocatable :: data(:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3)))
+    allocate(datashape(3))
+    datashape = getReadDataShape(self, 3, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData3dF32
@@ -2561,9 +2584,10 @@ contains
     real(sp)         , intent(out), allocatable :: data(:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4)))
+    allocate(datashape(4))
+    datashape = getReadDataShape(self, 4, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData4dF32
@@ -2574,9 +2598,10 @@ contains
     real(sp)         , intent(out), allocatable :: data(:,:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4),datashape(5)))
+    allocate(datashape(5))
+    datashape = getReadDataShape(self, 5, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData5dF32
@@ -2598,9 +2623,10 @@ contains
     real(dp)         , intent(out), allocatable :: data(:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,1,start,count,stride)
-    allocate(data(datashape(1)))
+    allocate(datashape(1))
+    datashape = getReadDataShape(self, 1, start, count, stride)
 
+    allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData1dF64
@@ -2611,9 +2637,10 @@ contains
     real(dp)         , intent(out), allocatable :: data(:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,2,start,count,stride)
-    allocate(data(datashape(1),datashape(2)))
+    allocate(datashape(2))
+    datashape = getReadDataShape(self, 2, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData2dF64
@@ -2624,9 +2651,10 @@ contains
     real(dp)         , intent(out), allocatable :: data(:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3)))
+    allocate(datashape(3))
+    datashape = getReadDataShape(self, 3, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData3dF64
@@ -2637,9 +2665,10 @@ contains
     real(dp)         , intent(out), allocatable :: data(:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4)))
+    allocate(datashape(4))
+    datashape = getReadDataShape(self, 4, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData4dF64
@@ -2650,9 +2679,10 @@ contains
     real(dp)         , intent(out), allocatable :: data(:,:,:,:,:)
     integer(i4)                   , allocatable :: datashape(:)
 
-    datashape = getReadDataShape(self,3,start,count,stride)
-    allocate(data(datashape(1),datashape(2),datashape(3),datashape(4),datashape(5)))
+    allocate(datashape(5))
+    datashape = getReadDataShape(self, 5, start, count, stride)
 
+    allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData5dF64
@@ -2662,7 +2692,7 @@ contains
     integer(i4)     , intent(in)           :: datarank
     integer(i4)     , intent(in), optional :: instart(:), incount(:), instride(:)
     integer(i4)                            :: getReadDataShape(datarank)
-    integer(i4)     , allocatable          :: datashape(:)
+    integer(i4)                            :: datashape(datarank)
 
     datashape = var%getShape()
     if (present(incount)) then
