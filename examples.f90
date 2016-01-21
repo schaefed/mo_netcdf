@@ -1,6 +1,5 @@
 program example_mo_netcdf
 
-
   use mo_kind  , only : i4, sp, dp
   use mo_netcdf, only: NcDataset, NcDimension, NcVariable
 
