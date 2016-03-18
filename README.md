@@ -15,6 +15,7 @@ The module is tested with the following compilers:
 
 #Usage
 More detailed information about routine/interface signatures can be found in mo_netcdf.f90
+The below examples can be found in examples.f90.
 
 Write a netcdf file:
 
