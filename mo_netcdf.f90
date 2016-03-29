@@ -2463,10 +2463,10 @@ contains
     integer(i4)      , intent(in) , optional    :: start(:), count(:), stride(:), map(:)
     integer(i4)      , intent(out), allocatable :: data(:)
     integer(i4)                   , allocatable :: datashape(:)
-
+    
     allocate(datashape(1))
     datashape = getReadDataShape(self, 1, start, count, stride)
-
+    
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
@@ -2713,8 +2713,7 @@ contains
        write(*,*) "Given read parameters do not match output variable rank!"
        stop 1
     end if
-
-    getReadDataShape = pack(datashape, datashape .gt. 1)
+    getReadDataShape = pack(datashape, datashape .ge. 1)
   end function getReadDataShape
 
   function getDtypeFromString(dtype)
