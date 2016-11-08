@@ -2628,7 +2628,7 @@ contains
 
     allocate(datashape(1))
     datashape = getReadDataShape(self, 1, start, count, stride)
-
+    
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, count, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
@@ -2694,26 +2694,40 @@ contains
     type(NcVariable), intent(in)           :: var
     integer(i4)     , intent(in)           :: datarank
     integer(i4)     , intent(in), optional :: instart(:), incount(:), instride(:)
+    integer(i4)     , allocatable          :: readshape(:)
+    integer(i4)                            :: naxis
     integer(i4)                            :: getReadDataShape(datarank)
-    integer(i4)                            :: datashape(datarank)
 
-    datashape = var%getShape()
+    readshape = var%getShape()
+    
     if (present(incount)) then
-       datashape = incount
+       readshape = incount
     else
        if (present(instart)) then
-          datashape(:size(instart)) = datashape(:size(instart)) - (instart - 1)
+          readshape(:size(instart)) = readshape(:size(instart)) - (instart - 1)
        end if
        if (present(instride)) then
-          datashape(:size(instride)) = datashape(:size(instride)) / instride
+          readshape(:size(instride)) = readshape(:size(instride)) / instride
        end if
     end if
-
-    if (count(datashape .ge. 1) .ne. datarank) then
-       write(*,*) "Given read parameters do not match output variable rank!"
+    
+    naxis = count(readshape .gt. 1)
+    
+    if (all(readshape .eq. 1)) then
+       ! return 1-element array
+       getReadDataShape(:) = 1 !readshape(1:datarank+1)
+    else if (size(readshape) .eq. datarank) then
+       ! sizes fit
+       getReadDataShape = readshape
+    else if (naxis .eq. datarank) then
+       getReadDataShape = pack(readshape, readshape .gt. 1)
+    ! else if (naxis .lt. datarank) then
+       ! would be nice...
+    else
+       write(*,*) "Given data reading parameters do not match output variable rank!"
        stop 1
     end if
-    getReadDataShape = pack(datashape, datashape .ge. 1)
+       
   end function getReadDataShape
 
   function getDtypeFromString(dtype)
