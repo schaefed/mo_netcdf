@@ -993,7 +993,7 @@ module mo_netcdf
      !>                                   values/(:)/(:,:)/(:,:,:)/(:,:,:,:)/(:,:,:,:,:)"
      !
      !     INTENT(IN), OPTIONAL
-     !>        \param[in]  "integer(i4) :: start(:), count(:), stride(:), map(:)"
+     !>        \param[in]  "integer(i4) :: start(:), cnt(:), stride(:), map(:)"
      !
      !     INTENT(INOUT)
      !         None
@@ -1059,7 +1059,7 @@ module mo_netcdf
      !         None
      !
      !     INTENT(IN), OPTIONAL
-     !>        \param[in] "integer(i4) :: start(:), count(:), stride(:), map(:)"
+     !>        \param[in] "integer(i4) :: start(:), cnt(:), stride(:), map(:)"
      !
      !     INTENT(INOUT)
      !         None
@@ -2024,48 +2024,48 @@ contains
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setDataScalarI8
 
-  subroutine setData1dI8(self, values, start, count, stride, map)
+  subroutine setData1dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i1)      , intent(in)           :: values(:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData1dI8
 
-  subroutine setData2dI8(self, values, start, count, stride, map)
+  subroutine setData2dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i1)      , intent(in)           :: values(:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData2dI8
 
-  subroutine setData3dI8(self, values, start, count, stride, map)
+  subroutine setData3dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i1)      , intent(in)           :: values(:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData3dI8
 
-  subroutine setData4dI8(self, values, start, count, stride, map)
+  subroutine setData4dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i1)      , intent(in)           :: values(:,:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData4dI8
 
-  subroutine setData5dI8(self, values, start, count, stride, map)
+  subroutine setData5dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i1)      , intent(in)           :: values(:,:,:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData5dI8
 
@@ -2078,25 +2078,25 @@ contains
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setDataScalarI16
 
-  subroutine setData1dI16(self, values, start, count, stride, map)
+  subroutine setData1dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i2)      , intent(in)           :: values(:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData1dI16
 
-  subroutine setData2dI16(self, values, start, count, stride, map)
+  subroutine setData2dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i2)      , intent(in)           :: values(:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData2dI16
 
-  subroutine setData3dI16(self, values, start, count, stride, map)
+  subroutine setData3dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i2)      , intent(in)           :: values(:,:,:)
     integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
