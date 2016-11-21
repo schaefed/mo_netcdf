@@ -2099,27 +2099,27 @@ contains
   subroutine setData3dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i2)      , intent(in)           :: values(:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData3dI16
 
-  subroutine setData4dI16(self, values, start, count, stride, map)
+  subroutine setData4dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i2)      , intent(in)           :: values(:,:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData4dI16
 
-  subroutine setData5dI16(self, values, start, count, stride, map)
+  subroutine setData5dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i2)      , intent(in)           :: values(:,:,:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData5dI16
 
@@ -2132,48 +2132,48 @@ contains
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setDataScalarI32
 
-  subroutine setData1dI32(self, values, start, count, stride, map)
+  subroutine setData1dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i4)      , intent(in)           :: values(:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData1dI32
 
-  subroutine setData2dI32(self, values, start, count, stride, map)
+  subroutine setData2dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i4)      , intent(in)           :: values(:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData2dI32
 
-  subroutine setData3dI32(self, values, start, count, stride, map)
+  subroutine setData3dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i4)      , intent(in)           :: values(:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData3dI32
 
-  subroutine setData4dI32(self, values, start, count, stride, map)
+  subroutine setData4dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i4)      , intent(in)           :: values(:,:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData4dI32
 
-  subroutine setData5dI32(self, values, start, count, stride, map)
+  subroutine setData5dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i4)      , intent(in)           :: values(:,:,:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData5dI32
 
@@ -2186,30 +2186,30 @@ contains
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setDataScalarF32
 
-  subroutine setData1dF32(self, values, start, count, stride, map)
+  subroutine setData1dF32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(sp)         , intent(in)           :: values(:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData1dF32
 
-  subroutine setData2dF32(self, values, start, count, stride, map)
+  subroutine setData2dF32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(sp)         , intent(in)           :: values(:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData2dF32
 
-  subroutine setData3dF32(self, values, start, count, stride, map)
+  subroutine setData3dF32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(sp)         , intent(in)           :: values(:,:,:)
-    integer(i4)      , intent(in), optional :: start(:), count(:), stride(:), map(:)
+    integer(i4)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
-    call check( nf90_put_var(self%parent%id, self%id, values, start, count, stride, map), &
+    call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData3dF32
 
