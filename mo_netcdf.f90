@@ -11,7 +11,6 @@
 !> \authors David Schaefer
 !> \date Jun 2015
 
-
 module mo_netcdf
 
   ! This module provides a thin wrapper around the NetCDF Fortran 90 interface,
@@ -49,77 +48,65 @@ module mo_netcdf
        NF90_OPEN, NF90_NETCDF4, NF90_CREATE, NF90_WRITE, NF90_NOWRITE,     &
        NF90_BYTE, NF90_SHORT, NF90_INT, NF90_FLOAT, NF90_DOUBLE,                      &
        NF90_FILL_BYTE, NF90_FILL_SHORT, NF90_FILL_INT, NF90_FILL_FLOAT , NF90_FILL_DOUBLE, &
-       NF90_NOERR, NF90_UNLIMITED, NF90_GLOBAL
+       NF90_NOERR, NF90_UNLIMITED, NF90_GLOBAL, &
+       !Onde estiver: XXX adicionado por mim
+       nf90_inq_ncid, nf90_inq_grp_parent, nf90_inq_grpname
 
 
   implicit none
 
   ! --------------------------------------------------------------------------------------
-  !
-  !     NAME
-  !         NcDataset
-  !
-  !     PURPOSE
-  !>        \brief Provides basic file modification functionality
-  !>        \details Bound to this derived type is the basic file level create/retrieve
-  !>                 functionality, i.e. functions/subroutines to create/retrieve
-  !>                 dimensions, variables and global attributes.
-  !>                 All files created by this derived type and its procedures are
-  !>                 are NF90_NETCDF4 only.
-  !>                 The supported modes are:
-  !>                     r: read
-  !>                     w: write/create
-  !<                     a: alter
-  !
-  !     INTENT(IN)
-  !>        \param[in] "character(*) :: fname"
-  !>        \param[in] "character(1) :: mode"
-  !
-  !     INTENT(INOUT)
-  !         None
-  !
-  !     INTENT(OUT)
-  !         None
-  !
-  !     RETURN
-  !>        \return "type(NcDataset)"
-  !
-  !     EXAMPLE
-  !         See test file
-  !
-  !     HISTORY
-  !         \author David Schaefer
-  !         \date June 2015
-  !
-  ! --------------------------------------------------------------------------------------
-  type NcDataset
 
-     character(256)                       :: fname !> Filename of the opened dataset
-     character(1)                         :: mode  !> File open mode
-     integer(i4)                          :: id    !> NetCDF id
-
+  type :: NcAttribute
+    integer(kind=i4) :: id
    contains
+     procedure, public  :: hasAttribute
+     procedure, public  :: groupparentid
+     procedure, public  :: getgroupname
+     
+     procedure, private :: setAttributeChar
+     procedure, private :: setAttributeI8
+     procedure, private :: setAttributeI16
+     procedure, private :: setAttributeI32
+     procedure, private :: setAttributeF32
+     procedure, private :: setAttributeF64
 
-     procedure, public  :: initNcDataset
+     procedure, private :: getAttributeChar
+     procedure, private :: getAttributeI8
+     procedure, private :: getAttributeI16
+     procedure, private :: getAttributeI32
+     procedure, private :: getAttributeF32
+     procedure, private :: getAttributeF64
+
+     generic, public :: setAttribute => &
+          setAttributeChar, &
+          setAttributeI8,   &
+          setAttributeI16,   &
+          setAttributeI32,   &
+          setAttributeF32,   &
+          setAttributeF64
+
+     generic, public :: getAttribute => &
+          getAttributeChar, &
+          getAttributeI8,   &
+          getAttributeI16,   &
+          getAttributeI32,   &
+          getAttributeF32,   &
+          getAttributeF64
+  end type NcAttribute
+
+  ! --------------------------------------------------------------------------------------
+
+  type, extends(NcAttribute) :: NcGroup
+     character(len=256)  :: name
+     
+  contains
+     procedure, public  :: initNcGroup
 
      procedure, public  :: getNoVariables
      procedure, public  :: getVariableIds
      procedure, public  :: getVariables
      
-     procedure, private :: setGlobalAttributeChar
-     procedure, private :: setGlobalAttributeI8
-     procedure, private :: setGlobalAttributeI16
-     procedure, private :: setGlobalAttributeI32
-     procedure, private :: setGlobalAttributeF32
-     procedure, private :: setGlobalAttributeF64
-
-     procedure, private :: getGlobalAttributeChar
-     procedure, private :: getGlobalAttributeI8
-     procedure, private :: getGlobalAttributeI16
-     procedure, private :: getGlobalAttributeI32
-     procedure, private :: getGlobalAttributeF32
-     procedure, private :: getGlobalAttributeF64
-
      procedure, private :: getDimensionByName
      procedure, private :: getDimensionById
 
@@ -129,403 +116,49 @@ module mo_netcdf
 
      procedure, private :: getVariableByName
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         hasVariable
-     !
-     !     PURPOSE
-     !>        \brief Check if variable exists
-     !>        \details Returns true if a variable with the given name exists, false
-     !>                 otherwise.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*) :: name"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return "logical"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: hasVariable
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         hasDimension
-     !
-     !     PURPOSE
-     !>        \brief Check if dimension exists
-     !>        \details Returns true if a dimension with the given name exists, false
-     !>                 otherwise.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*) :: name"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return "logical"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: hasDimension
+     !XXX
+     procedure, public  :: hasGroup
+     !XXX
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getUnlimitedDimension
-     !
-     !     PURPOSE
-     !>        \brief Return the unlimited dimension of the dataset
-     !>        \details Returns the NcDimension derived type of the unlimited dimension.
-     !>                 The program will teminate abruptly if no such dimension exists.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*) :: name"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return "logical"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: getUnlimitedDimension
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         isUnlimited
-     !
-     !     PURPOSE
-     !>        \brief Check if the dataset is unlimited
-     !>        \details Returns true if the dataset contains an unlimited dimension,
-     !>                 false otherwise.
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return "logical"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: isUnlimited => isDatasetUnlimited
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         close
-     !
-     !     PURPOSE
-     !>        \brief Close the datset
-     !>        \details Close the NetCDF datset. The program will teminate abruptly if
-     !>                 the file cannot be closed correctly.
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         None
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
-     procedure, public  :: close
-
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         setDimension
-     !
-     !     PURPOSE
-     !>        \brief Create a new dimension
-     !>        \details Create a new dimension of given length. A length < 0 indicates an
-     !>                 unlimited dimension. The program will teminate abruptly if the
-     !>                 dimension cannot be created.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*) :: name"
-     !>        \param[in] "integer(i4)  :: length"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return NcDimension
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: setDimension
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         setAttribute
-     !
-     !     PURPOSE
-     !>        \brief Create a new global Attribute
-     !>        \details Create a new global attribute from given name and value.
-     !>                 The program will teminate abruptly if the attribute cannot be
-     !>                 created.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*)                               :: name"
-     !>        \param[in] "character(*)/integer(i4)/real(sp)/real(dp) :: value"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         None
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
-     generic,   public  :: setAttribute => &
-          setGlobalAttributeChar, &
-          setGlobalAttributeI8,   &
-          setGlobalAttributeI16,   &
-          setGlobalAttributeI32,   &
-          setGlobalAttributeF32,   &
-          setGlobalAttributeF64
-
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getAttribute
-     !
-     !     PURPOSE
-     !>        \brief Retrieve global attribute value
-     !>        \details Retrieve the value for a global attribute specified by its name.
-     !>                 The program will teminate abruptly if the attribute does not
-     !>                 exist.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*) :: name"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !>        \param[out] "character(*)/integer(i4)/real(sp)/real(dp) :: value"
-     !
-     !     RETURN
-     !         None
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
-     generic,   public  :: getAttribute => &
-          getGlobalAttributeChar, &
-          getGlobalAttributeI8,   &
-          getGlobalAttributeI16,   &
-          getGlobalAttributeI32,   &
-          getGlobalAttributeF32,   &
-          getGlobalAttributeF64
-
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getDimension
-     !
-     !     PURPOSE
-     !>        \brief Retrieve NcDimension
-     !>        \details Retrieve the NcDimension derived type for the dimension specified by
-     !>                 its name or id. The program will teminate abruptly if no such
-     !>                 dimension exists.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*)/integer(i4) :: name/id"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return NcDimension
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      generic,   public  :: getDimension => &
           getDimensionById, &
           getDimensionByName
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         setVariable
-     !
-     !     PURPOSE
-     !>        \brief Create a NetCDF variable
-     !>        \details Create a NetCDF Variable with given name, data type and dimensions.
-     !>                 All optional arguments to the nf90_def_var function are supported.
-     !>                 The program will teminate abruptly if the variable cannot be
-     !>                 created.
-     !>                 Supported data types and their string encodings:
-     !>                     NF90_BYTE   -> "i8"
-     !>                     NF90_SHORT  -> "i16"
-     !>                     NF90_INT    -> "i32"
-     !>                     NF90_FLOAT  -> "f32"
-     !>                     NF90_DOUBLE -> "f64"
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*) :: name"
-     !>        \param[in] "character(3) :: dtype"
-     !>        \param[in] "integer(i4)/character(*)/type(NcDataset) :: dimensions(:)"
-     !
-     !     INTENT(IN), OPTIONAL
-     !>       \param[in] "logical     :: contiguous"
-     !>       \param[in] "integer(i4) :: chunksizes(:)"
-     !>       \param[in] "integer(i4) :: deflate_level"
-     !>       \param[in] "logical     :: shuffle"
-     !>       \param[in] "logical     :: fletcher32"
-     !>       \param[in] "integer(i4) :: endianess"
-     !>       \param[in] "integer(i4) :: cache_size"
-     !>       \param[in] "integer(i4) :: cache_nelems"
-     !>       \param[in] "integer(i4) :: cache_preemption"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return NcVariable
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      generic,   public  :: setVariable => &
           setVariableWithNames, &
           setVariableWithTypes, &
           setVariableWithIds
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getVariable
-     !
-     !     PURPOSE
-     !>        \brief Retrieve NcVariable
-     !>        \details Retrieve the NcVariable derived type for the variable specified by its
-     !>                 name. The program will teminate abruptly if no such dimension
-     !>                 exists.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*) :: name"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return NcVariable
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      generic,  public  :: getVariable => &
           getVariableByName
+  end type NcGroup
+
+  interface NcGroup
+     procedure newNcGroup
+  end interface NcGroup
+
+  ! --------------------------------------------------------------------------------------
+
+  type, extends(NcGroup) :: NcDataset
+
+     character(256)                       :: fname !> Filename of the opened dataset
+     character(1)                         :: mode  !> File open mode
+!     integer(i4)                          :: id    !> NetCDF id
+!     type(NcGroup)                        :: root
+
+   contains
+
+     procedure, public  :: initNcDataset
+     procedure, public  :: close
 
   end type NcDataset
 
@@ -533,108 +166,21 @@ module mo_netcdf
      procedure newNcDataset
   end interface NcDataset
 
-  ! --------------------------------------------------------------------------------------
-  !
-  !     NAME
-  !         NcDimension
-  !
-  !     PURPOSE
-  !>        \brief Provides the dimension access functionality
-  !>        \details Bound to this derived type is some necessary inquire functionality.
-  !>                 This type is not to be instantiated directly! Use the
-  !>                 getDimension/setDimension functions of a NcDataset instance as a
-  !>                 "constructor".
-  !
-  !     INTENT(IN)
-  !         None
-  !
-  !     INTENT(INOUT)
-  !         None
-  !
-  !     INTENT(OUT)
-  !         None
-  !
-  !     RETURN
-  !         None
-  !
-  !     EXAMPLE
-  !         See test file
-  !
-  !     HISTORY
-  !         \author David Schaefer
-  !         \date June 2015
-  !
-  ! --------------------------------------------------------------------------------------
-  type NcDimension
+! --------------------------------------------------------------------------------------
 
-     integer(i4)     :: id      !> The NetCDF dimension id
-     type(NcDataset) :: parent  !> The dimension's parent
+  type, extends(NcAttribute) :: NcDimension
+
+!     integer(i4)     :: id      !> The NetCDF dimension id
+     type(NcGroup) :: parent  !> The dimension's parent
 
    contains
 
      procedure, public :: initNcDimension
      
      procedure, public :: getName => getDimensionName
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getLength
-     !
-     !     PURPOSE
-     !>        \brief Retrieve the dimension length
-     !>        \details Return the length of the dimension
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         \return "integer(i4)"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !         \author David Schaefer
-     !         \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
-     procedure, public :: getLength   => getDimensionLength
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         isUnlimited
-     !
-     !     PURPOSE
-     !>        \brief Check if the dimension is unlimited
-     !>        \details Returns true if the dimension is unlimited, false otherwise.
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return "logical"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
+     procedure, public :: getLength => getDimensionLength
+
      procedure, public :: isUnlimited => isUnlimitedDimension
 
   end type NcDimension
@@ -647,44 +193,12 @@ module mo_netcdf
      procedure equalNcDimensions
   end interface operator (==)
 
-  ! --------------------------------------------------------------------------------------
-  !
-  !     NAME
-  !         NcVariable
-  !
-  !     PURPOSE
-  !>        \brief Provides the variable releated read/write functionality
-  !>        \details Bound to this derived type is the main variable related NetCDF
-  !>                 functionality, i.e. reading/writing data and attributes, as well
-  !>                 as some inquire procedures.
-  !>                 This type is not to be instatiated directly, instead the
-  !>                 getVariable/setVariable functions of a NcDataset instance should
-  !>                 be used as a "constructor".
-  !
-  !     INTENT(IN)
-  !         None
-  !
-  !     INTENT(INOUT)
-  !         None
-  !
-  !     INTENT(OUT)
-  !         None
-  !
-  !     RETURN
-  !         None
-  !
-  !     EXAMPLE
-  !         See test file
-  !
-  !     HISTORY
-  !         \author David Schaefer
-  !         \date June 2015
-  !
-  ! --------------------------------------------------------------------------------------
-  type NcVariable
+! --------------------------------------------------------------------------------------
 
-     integer(i4)     :: id       !> Variable id
-     type(NcDataset) :: parent   !> The variables's parent
+  type, extends(NcAttribute) :: NcVariable
+
+!     integer(i4)     :: id       !> Variable id
+     type(NcGroup) :: parent   !> The variables's parent
      ! character(256)  :: name     !> Variable name
 
    contains
@@ -693,20 +207,6 @@ module mo_netcdf
 
      procedure, public  :: getName => getVariableName
      
-     procedure, private :: setVariableAttributeChar
-     procedure, private :: setVariableAttributeI8
-     procedure, private :: setVariableAttributeI16
-     procedure, private :: setVariableAttributeI32
-     procedure, private :: setVariableAttributeF32
-     procedure, private :: setVariableAttributeF64
-
-     procedure, private :: getVariableAttributeChar
-     procedure, private :: getVariableAttributeI8
-     procedure, private :: getVariableAttributeI16
-     procedure, private :: getVariableAttributeI32
-     procedure, private :: getVariableAttributeF32
-     procedure, private :: getVariableAttributeF64
-
      procedure, private :: setDataScalarI8
      procedure, private :: setData1dI8
      procedure, private :: setData2dI8
@@ -781,237 +281,16 @@ module mo_netcdf
      procedure, private :: getVariableFillValueF32
      procedure, private :: getVariableFillValueF64
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getNoDimensions
-     !
-     !     PURPOSE
-     !>        \brief Retrieve the number of dimensions
-     !>        \details Return the number of dimensions associated with variable
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         \return "integer(i4)"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !         \author David Schaefer
-     !         \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: getNoDimensions
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getDimensions
-     !
-     !     PURPOSE
-     !>        \brief Retrieve the variable dimensions
-     !>        \details Return the ids of the dimensions associated with variable.
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         \return "integer(i4), alloctable, dimension(:)"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !         \author David Schaefer
-     !         \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: getDimensions => getVariableDimensions
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getShape
-     !
-     !     PURPOSE
-     !>        \brief Retrieve the shape of the variable
-     !>        \details Return the shape of the variable.
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         \return "integer(i4), alloctable, dimension(:)"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !         \author David Schaefer
-     !         \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: getShape      => getVariableShape
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getDtype
-     !
-     !     PURPOSE
-     !>        \brief Retrieve the variable data type
-     !>        \details Return the encoded data type of the variable.
-     !>                 Data type encodeings
-     !>                     "f32" -> NF90_FLOAT
-     !>                     "f64" -> NF90_DOUBLE
-     !>                     "i8"  -> NF90_BYTE
-     !>                     "i16" -> NF90_SHORT
-     !>                     "i32" -> NF90_INT
-     !>                     "i64" -> NF90_INT64
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         \return "character(3)"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !         \author David Schaefer
-     !         \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: getDtype      => getVariableDtype
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         hasAttribute
-     !
-     !     PURPOSE
-     !>        \brief Check if attribute exists
-     !>        \details Returns true if an attribute with the given name exists, false
-     !>                 otherwise.
-     !
-     !     INTENT(IN)
-     !         \param[in] "character(*) :: name"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         \return "logical"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !         \author David Schaefer
-     !         \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
-     procedure, public  :: hasAttribute
-
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         isUnlimited
-     !
-     !     PURPOSE
-     !>        \brief Check if the variable is unlimited
-     !>        \details Returns true if the variable has an unlimited dimension,
-     !>                 false otherwise.
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !>        \return "logical"
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      procedure, public  :: isUnlimited   => isUnlimitedVariable
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         setData
-     !
-     !     PURPOSE
-     !>        \brief Write data to variable
-     !>        \details Write the given data into the variable at an optionally given
-     !>                 position.
-     !>                 All optional arguments to the nf90_put_var function are supported.
-     !>                 A write error will result in abrupt program termination.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "integer(i4)/real(sp)/real(dp) :: &
-     !>                                   values/(:)/(:,:)/(:,:,:)/(:,:,:,:)/(:,:,:,:,:)"
-     !
-     !     INTENT(IN), OPTIONAL
-     !>        \param[in]  "integer(i4) :: start(:), cnt(:), stride(:), map(:)"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         None
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      generic, public :: setData => &
           setDataScalarI8, &
           setData1dI8, &
@@ -1044,42 +323,6 @@ module mo_netcdf
           setData4dF64, &
           setData5dF64
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getData
-     !
-     !     PURPOSE
-     !>        \brief Retrieve data
-     !>        \details Read the data from an optionally given position.
-     !>                 All optional arguments to the nf90_get_var function are supported.
-     !>                 A read error will result in abrupt program termination.
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(IN), OPTIONAL
-     !>        \param[in] "integer(i4) :: start(:), cnt(:), stride(:), map(:)"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !>      \param[out] "integer(i4)/real(sp)/real(dp), allocatable :: &
-     !>                                   values/(:)/(:,:)/(:,:,:)/(:,:,:,:)/(:,:,:,:,:)"
-     !
-     !
-     !     RETURN
-     !         None
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      generic, public :: getData => &
           getDataScalarI8, &
           getData1dI8, &
@@ -1112,77 +355,13 @@ module mo_netcdf
           getData4dF64, &
           getData5dF64
 
-
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         setFillValue
-     !
-     !     PURPOSE
-     !>        \brief Set the variable fill value
-     !>        \details Define the variable fill value.
-     !>                 A write error results in abrupt program temination.
-     !>        \note This procedure must be called AFTER the variable was created but
-     !>              BEFORE data is first written.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "integer(i4)/real(sp)/real(dp) :: fvalue"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         None
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
-          generic, public :: setFillValue => &
+     generic, public :: setFillValue => &
           setVariableFillValueI8, &
           setVariableFillValueI16, &
           setVariableFillValueI32, &
           setVariableFillValueF32, &
           setVariableFillValueF64
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getFillValue
-     !
-     !     PURPOSE
-     !>        \brief  Retrieve the variable fill value
-     !>        \details Retrieve the variable fill value or a default value if fill value
-     !>                 was not explicitly set.
-     !>                 A read error results in abrupt program temination.
-     !
-     !     INTENT(IN)
-     !         None
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !>        \param[out] "integer(i4)/real(sp)/real(dp) :: fvalue"
-     !
-     !     RETURN
-     !         None
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
      generic, public :: getFillValue => &
           getVariableFillValueI8, &
           getVariableFillValueI16, &
@@ -1190,96 +369,18 @@ module mo_netcdf
           getVariableFillValueF32, &
           getVariableFillValueF64
 
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         setAttribute
-     !
-     !     PURPOSE
-     !>        \brief Create a new variable attribute
-     !>        \details Create a new variable attribute from given name and value.
-     !>                 A write error results in abrupt program temination.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*)                               :: name"
-     !>        \param[in] "character(*)/integer(i4)/real(sp)/real(dp) :: value"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !         None
-     !
-     !     RETURN
-     !         None
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
-     generic, public :: setAttribute => &
-          setVariableAttributeChar, &
-          setVariableAttributeI8,   &
-          setVariableAttributeI16,   &
-          setVariableAttributeI32,   &
-          setVariableAttributeF32,   &
-          setVariableAttributeF64
-
-     ! -----------------------------------------------------------------------------------
-     !
-     !     NAME
-     !         getAttribute
-     !
-     !     PURPOSE
-     !>        \brief Retrieve variable attribute value
-     !>        \details Retrieve the value for a variable attribute specified by its name.
-     !>                 The program will teminate abruptly if the attribute does not
-     !>                 exist.
-     !
-     !     INTENT(IN)
-     !>        \param[in] "character(*) :: name"
-     !
-     !     INTENT(INOUT)
-     !         None
-     !
-     !     INTENT(OUT)
-     !>        \param[out] "character(*)/integer(i4)/real(sp)/real(dp) :: value"
-     !
-     !     RETURN
-     !         None
-     !
-     !     EXAMPLE
-     !         See test file
-     !
-     !     HISTORY
-     !>        \author David Schaefer
-     !>        \date June 2015
-     !
-     ! -----------------------------------------------------------------------------------
-     generic, public :: getAttribute => &
-          getVariableAttributeChar, &
-          getVariableAttributeI8,   &
-          getVariableAttributeI16,   &
-          getVariableAttributeI32,   &
-          getVariableAttributeF32,   &
-          getVariableAttributeF64
-
   end type NcVariable
 
   interface NcVariable
-     procedure newNcVariable
+    procedure newNcVariable
   end interface NcVariable
-
+  ! --------------------------------------------------------------------------------------
 contains
 
   subroutine initNcVariable(self, id, parent)
     class(NcVariable), intent(inout) :: self
     integer(i4)      , intent(in)    :: id
-    type(NcDataset)  , intent(in)    :: parent
+    type(NcGroup)  , intent(in)    :: parent
 
     self%id     = id
     self%parent = parent
@@ -1288,7 +389,7 @@ contains
   subroutine initNcDimension(self, id, parent)
     class(NcDimension), intent(inout) :: self
     integer(i4)       , intent(in)    :: id
-    type(NcDataset)   , intent(in)    :: parent
+    type(NcGroup)   , intent(in)    :: parent
 
     self%id     = id
     self%parent = parent
@@ -1299,6 +400,7 @@ contains
     character(*)    , intent(in)    :: fname
     character(1)    , intent(in)    :: mode
     integer(i4)                     :: status
+    character(len=255)              :: gname
 
     select case(mode)
     case("w")
@@ -1315,18 +417,57 @@ contains
 
     self%fname = fname
     self%mode  = mode
+    call self%getgroupname(self%name)
   end subroutine initNcDataset
+!XXX
 
+  subroutine initNcGroup(self, name, parent)
+    class(NcGroup), intent(inout) :: self
+    character(*)    , intent(in)    :: name
+    class(NcGroup)   , intent(in)    :: parent
+    
+    call check(nf90_inq_ncid(parent%id,name,self%id),"Group does not exist")
+    self%name=name
+  end subroutine initNcGroup
+
+!  subroutine moveuptoGroup(self, name)
+!    class(NcGroup), intent(inout) :: self
+!    character(*)    , intent(in)    :: name
+!    integer(i4)                     :: tmpid
+
+!    call check(nf90_inq_ncid(self%id,name,tmpid),"Group does not exist")
+!    self%id=tmpid
+!  end subroutine moveuptoGroup
+
+  integer(i4) function groupparentid(self)
+    class(NcAttribute), intent(inout) :: self
+    integer(kind=4) :: status
+    integer(kind=4) :: id
+
+    status = nf90_inq_grp_parent(self%id,groupparentid)
+    if( status/=0 ) then
+      groupparentid=self%id
+    end if
+  end function groupparentid
+
+  subroutine getgroupname(self, name)
+    class(NcAttribute), intent(in)    :: self
+    character(*)  , intent(out)   :: name
+
+    call check(nf90_inq_grpname(self%id,name),"failed to read group name")
+  end subroutine getgroupname
+
+!XXX
   type(NcVariable) function newNcVariable(id, parent)
     integer(i4)    , intent(in) :: id
-    type(NcDataset), intent(in) :: parent
+    type(NcGroup), intent(in) :: parent
 
     call newNcVariable%initNcVariable(id, parent)
   end function newNcVariable
 
   type(NcDimension) function newNcDimension(id, parent)
     integer(i4)    , intent(in) :: id
-    type(NcDataset), intent(in) :: parent
+    type(NcGroup), intent(in) :: parent
 
     call newNcDimension%initNcDimension(id, parent)
   end function newNcDimension
@@ -1338,6 +479,13 @@ contains
     call newNcDataset%initNcDataset(fname,mode)
   end function newNcDataset
 
+  type(NcGroup) function newNcGroup(name, parent)
+    class(NcGroup), intent(in) :: parent
+    character(*),  intent(in) :: name
+
+    call newNcGroup%initNcGroup(name, parent)
+  end function newNcGroup
+
   subroutine close(self)
     class(NcDataset) :: self
 
@@ -1345,14 +493,14 @@ contains
   end subroutine close
 
   function getNoVariables(self)
-    class(NcDataset), intent(in) :: self
+    class(NcGroup), intent(in) :: self
     integer(i4)                  :: getNoVariables
 
     call check(nf90_inquire(self%id, nvariables=getNoVariables), "Failed inquire number of variables")
   end function getNoVariables
 
   function getVariableIds(self)
-    class(NcDataset), intent(in)           :: self
+    class(NcGroup), intent(in)           :: self
     integer(i4), dimension(:), allocatable :: getVariableIds
     integer(i4)                            :: tmp
     
@@ -1361,7 +509,7 @@ contains
   end function getVariableIds
   
   function getVariables(self)
-    class(NcDataset), intent(in)                :: self
+    class(NcGroup), intent(in)                :: self
     type(NcVariable), dimension(:), allocatable :: getVariables
     integer(i4), dimension(:), allocatable      :: varids
     integer(i4)                                 :: i, nvars
@@ -1393,22 +541,22 @@ contains
   end function getDimensionLength
 
   function isDatasetUnlimited(self)
-    class(NcDataset), intent(in) :: self
+    class(NcGroup), intent(in)   :: self
     logical                      :: isDatasetUnlimited
     integer(i4)                  :: dimid
 
     call check(nf90_inquire(self%id,unlimitedDimId=dimid), &
-         "Failed to inquire file "//self%fname)
+         "Failed to inquire group "//self%name)
     isDatasetUnlimited = (dimid .ne. -1)
   end function isDatasetUnlimited
 
   function getUnlimitedDimension(self)
-    class(NcDataset), intent(in) :: self
+    class(NcGroup), intent(in)   :: self
     type(NcDimension)            :: getUnlimitedDimension
     integer(i4)                  :: dimid
 
     call check(nf90_inquire(self%id,unlimitedDimId=dimid), &
-         "Failed to inquire file "//self%fname)
+         "Failed to inquire group "//self%name)
 
     if (dimid .eq. -1) then
        write(*,*) "Dataset has no unlimited dimension"
@@ -1435,7 +583,7 @@ contains
   end function isUnlimitedDimension
 
   function setDimension(self, name, length)
-    class(NcDataset), intent(in) :: self
+    class(NcGroup), intent(in) :: self
     character(*)    , intent(in) :: name
     integer(i4)     , intent(in) :: length
     type(NcDimension)            :: setDimension
@@ -1454,7 +602,7 @@ contains
   end function setDimension
 
   function hasVariable(self, name)
-    class(NcDataset), intent(in) :: self
+    class(NcGroup), intent(in) :: self
     character(*)    , intent(in) :: name
     logical                      :: hasVariable
     integer(i4)                  :: tmpid
@@ -1463,19 +611,27 @@ contains
   end function hasVariable
 
   function hasDimension(self, name)
-    class(NcDataset), intent(in) :: self
+    class(NcGroup), intent(in) :: self
     character(*)    , intent(in) :: name
     logical                      :: hasDimension
     integer(i4)                  :: tmpid
 
     hasDimension = (nf90_inq_dimid(self%id,name,tmpid) .eq. NF90_NOERR)
   end function hasDimension
+!XXX
+  function hasGroup(self, name)
+    class(NcGroup), intent(in) :: self
+    character(*)    , intent(in) :: name
+    logical                      :: hasGroup
+    integer(i4)                  :: tmpid
 
-
+    hasGroup = (nf90_inq_ncid(self%id,name,tmpid) .eq. NF90_NOERR)
+  end function hasGroup
+!XXX
   function setVariableWithIds(self, name, dtype, dimensions, contiguous, &
        chunksizes, deflate_level, shuffle, fletcher32, endianness, &
        cache_size, cache_nelems, cache_preemption)
-    class(NcDataset), intent(in)           :: self
+    class(NcGroup), intent(in)           :: self
     character(*)    , intent(in)           :: name
     character(3)    , intent(in)           :: dtype
     integer(i4)     , intent(in)           :: dimensions(:)
@@ -1496,7 +652,7 @@ contains
        chunksizes, deflate_level, shuffle, fletcher32, endianness, &
        cache_size, cache_nelems, cache_preemption)
 
-    class(NcDataset), intent(in)              :: self
+    class(NcGroup), intent(in)              :: self
     character(*)    , intent(in)              :: name
     character(3)    , intent(in)              :: dtype
     character(*)    , intent(in)              :: dimensions(:)
@@ -1520,7 +676,7 @@ contains
   function setVariableWithTypes(self, name, dtype, dimensions, contiguous, &
        chunksizes, deflate_level, shuffle, fletcher32, endianness, &
        cache_size, cache_nelems, cache_preemption)
-    class(NcDataset) , intent(in)              :: self
+    class(NcGroup) , intent(in)              :: self
     character(*)     , intent(in)              :: name
     character(3)     , intent(in)              :: dtype
     type(NcDimension), intent(in)              :: dimensions(:)
@@ -1542,7 +698,7 @@ contains
   end function setVariableWithTypes
 
   function getDimensionById(self, id)
-    class(NcDataset), intent(in) :: self
+    class(NcGroup), intent(in) :: self
     integer(i4)                  :: id
     type(NcDimension)            :: getDimensionById
     character(32)                :: msg, name
@@ -1554,7 +710,7 @@ contains
   end function getDimensionById
 
   function getDimensionByName(self, name)
-    class(NcDataset), intent(in) :: self
+    class(NcGroup), intent(in) :: self
     character(*)                 :: name
     type(NcDimension)            :: getDimensionByName
     integer(i4)                  :: id
@@ -1565,7 +721,7 @@ contains
   end function getDimensionByName
 
   function getVariableByName(self, name)
-    class(NcDataset), intent(in) :: self
+    class(NcGroup), intent(in) :: self
     character(*)    , intent(in) :: name
     type(NcVariable)             :: getVariableByName
     integer(i4)                  :: id
@@ -1653,270 +809,234 @@ contains
     end do
   end function isUnlimitedVariable
 
-  function hasAttribute(self,name)
-    class(NcVariable), intent(in) :: self
+!XXX
+  logical function hasAttribute(self,name)
+    class(NcAttribute), intent(inout) :: self
     character(*)     , intent(in) :: name
-    logical                       :: hasAttribute
     integer(i4)                   :: status
 
-    status = nf90_inquire_attribute(self%parent%id, self%id, name)
+    select type (self)
+    class is (NcGroup)
+        status = nf90_inquire_attribute(self%id, NF90_GLOBAL, name)
+    class is (NcVariable)
+        status = nf90_inquire_attribute(self%parent%id, self%id, name)
+    end select
+    
     hasAttribute = (status .eq. NF90_NOERR)
   end function hasAttribute
-
-  subroutine setGlobalAttributeChar(self, name, data)
-    class(NcDataset), intent(in) :: self
+!TODO
+  subroutine setAttributeChar(self, name, data)
+    class(NcAttribute), intent(in) :: self
     character(*)    , intent(in) :: name
     character(*)    , intent(in) :: data
 
-    call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
          "Failed to write attribute: " // name )
-  end subroutine setGlobalAttributeChar
+    class is (NcVariable)
+        call check(nf90_put_att(self%parent%id,self%id,name,data), &
+         "Failed to write attribute: " // name )
+    end select
+  end subroutine setAttributeChar
 
-  subroutine setGlobalAttributeI8(self, name, data)
-    class(NcDataset), intent(in) :: self
+  subroutine setAttributeI8(self, name, data)
+    class(NcAttribute), intent(in) :: self
     character(*)    , intent(in) :: name
     integer(i1)     , intent(in) :: data
 
-    call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
          "Failed to write attribute: " // name )
-  end subroutine setGlobalAttributeI8
+    class is (NcVariable)
+        call check(nf90_put_att(self%parent%id,self%id,name,data), &
+         "Failed to write attribute: " // name )
+    end select
+  end subroutine setAttributeI8
 
-  subroutine setGlobalAttributeI16(self, name, data)
-    class(NcDataset), intent(in) :: self
+  subroutine setAttributeI16(self, name, data)
+    class(NcAttribute), intent(in) :: self
     character(*)    , intent(in) :: name
     integer(i2)     , intent(in) :: data
 
-    call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
          "Failed to write attribute: " // name )
-  end subroutine setGlobalAttributeI16
+    class is (NcVariable)
+        call check(nf90_put_att(self%parent%id,self%id,name,data), &
+         "Failed to write attribute: " // name )
+    end select
+  end subroutine setAttributeI16
 
-  subroutine setGlobalAttributeI32(self, name, data)
-    class(NcDataset), intent(in) :: self
+  subroutine setAttributeI32(self, name, data)
+    class(NcAttribute), intent(in) :: self
     character(*)    , intent(in) :: name
     integer(i4)     , intent(in) :: data
 
-    call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
          "Failed to write attribute: " // name )
-  end subroutine setGlobalAttributeI32
+    class is (NcVariable)
+        call check(nf90_put_att(self%parent%id,self%id,name,data), &
+         "Failed to write attribute: " // name )
+    end select
+  end subroutine setAttributeI32
 
-  subroutine setGlobalAttributeF32(self, name, data)
-    class(NcDataset), intent(in) :: self
+  subroutine setAttributeF32(self, name, data)
+    class(NcAttribute), intent(in) :: self
     character(*)    , intent(in) :: name
     real(sp)        , intent(in) :: data
 
-    call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
          "Failed to write attribute: " // name )
-  end subroutine setGlobalAttributeF32
+    class is (NcVariable)
+        call check(nf90_put_att(self%parent%id,self%id,name,data), &
+         "Failed to write attribute: " // name )
+    end select
+  end subroutine setAttributeF32
 
-  subroutine setGlobalAttributeF64(self, name, data)
-    class(NcDataset), intent(in) :: self
+  subroutine setAttributeF64(self, name, data)
+    class(NcAttribute), intent(in) :: self
     character(*)    , intent(in) :: name
     real(dp)        , intent(in) :: data
 
-    call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
          "Failed to write attribute: " // name )
-  end subroutine setGlobalAttributeF64
+    class is (NcVariable)
+        call check(nf90_put_att(self%parent%id,self%id,name,data), &
+         "Failed to write attribute: " // name )
+    end select
+  end subroutine setAttributeF64
 
-  subroutine getGlobalAttributeChar(self, name, avalue)
-    class(NcDataset), intent(in)  :: self
+  subroutine getAttributeChar(self, name, avalue)
+    class(NcAttribute), intent(in)  :: self
     character(*)    , intent(in)  :: name
     character(*)    , intent(out) :: avalue
     integer(i4)                   :: length
 
-    call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
          "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
          "Could not read attribute "//name)
-  end subroutine getGlobalAttributeChar
+    class is (NcVariable)
+        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
+         "Could not inquire attribute "//name)
+        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
+         "Could not read attribute "//name)
+    end select
+  end subroutine getAttributeChar
 
-  subroutine getGlobalAttributeI8(self, name, avalue)
-    class(NcDataset), intent(in)  :: self
+  subroutine getAttributeI8(self, name, avalue)
+    class(NcAttribute), intent(in)  :: self
     character(*)    , intent(in)  :: name
     integer(i1)     , intent(out) :: avalue
     integer(i4)                   :: length
 
-    call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
          "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
          "Could not read attribute "//name)
-  end subroutine getGlobalAttributeI8
+    class is (NcVariable)
+        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
+         "Could not inquire attribute "//name)
+        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
+         "Could not read attribute "//name)
+    end select
+  end subroutine getAttributeI8
 
-  subroutine getGlobalAttributeI16(self, name, avalue)
-    class(NcDataset), intent(in)  :: self
+  subroutine getAttributeI16(self, name, avalue)
+    class(NcAttribute), intent(in)  :: self
     character(*)    , intent(in)  :: name
     integer(i2)     , intent(out) :: avalue
     integer(i4)                   :: length
 
-    call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
          "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
          "Could not read attribute "//name)
-  end subroutine getGlobalAttributeI16
+    class is (NcVariable)
+        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
+         "Could not inquire attribute "//name)
+        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
+         "Could not read attribute "//name)
+    end select
+  end subroutine getAttributeI16
 
-  subroutine getGlobalAttributeI32(self, name, avalue)
-    class(NcDataset), intent(in)  :: self
+  subroutine getAttributeI32(self, name, avalue)
+    class(NcAttribute), intent(in)  :: self
     character(*)    , intent(in)  :: name
     integer(i4)     , intent(out) :: avalue
     integer(i4)                   :: length
 
-    call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
          "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
          "Could not read attribute "//name)
-  end subroutine getGlobalAttributeI32
+    class is (NcVariable)
+        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
+         "Could not inquire attribute "//name)
+        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
+         "Could not read attribute "//name)
+    end select
+  end subroutine getAttributeI32
 
-  subroutine getGlobalAttributeF32(self, name, avalue)
-    class(NcDataset), intent(in)  :: self
+  subroutine getAttributeF32(self, name, avalue)
+    class(NcAttribute), intent(in)  :: self
     character(*)    , intent(in)  :: name
     real(sp)        , intent(out) :: avalue
     integer(i4)                   :: length
 
-    call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
          "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
          "Could not read attribute "//name)
-  end subroutine getGlobalAttributeF32
+    class is (NcVariable)
+        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
+         "Could not inquire attribute "//name)
+        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
+         "Could not read attribute "//name)
+    end select
+  end subroutine getAttributeF32
 
-  subroutine getGlobalAttributeF64(self, name, avalue)
-    class(NcDataset), intent(in)  :: self
+  subroutine getAttributeF64(self, name, avalue)
+    class(NcAttribute), intent(in)  :: self
     character(*)    , intent(in)  :: name
     real(dp)        , intent(out) :: avalue
     integer(i4)                   :: length
 
-    call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
+    select type (self)
+    class is (NcGroup)
+        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
          "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
          "Could not read attribute "//name)
-  end subroutine getGlobalAttributeF64
-
-  subroutine setVariableAttributeChar(self, name, data)
-    class(NcVariable), intent(in) :: self
-    character(*)     , intent(in) :: name
-    character(*)     , intent(in) :: data
-
-    call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-  end subroutine setVariableAttributeChar
-
-  subroutine setVariableAttributeI8(self, name, data)
-    class(NcVariable), intent(in) :: self
-    character(*)     , intent(in) :: name
-    integer(i1)      , intent(in) :: data
-
-    call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-  end subroutine setVariableAttributeI8
-  
-  subroutine setVariableAttributeI16(self, name, data)
-    class(NcVariable), intent(in) :: self
-    character(*)     , intent(in) :: name
-    integer(i2)      , intent(in) :: data
-
-    call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-  end subroutine setVariableAttributeI16
-
-  subroutine setVariableAttributeI32(self, name, data)
-    class(NcVariable), intent(in) :: self
-    character(*)     , intent(in) :: name
-    integer(i4)      , intent(in) :: data
-
-    call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-  end subroutine setVariableAttributeI32
-
-  subroutine setVariableAttributeF32(self, name, data)
-    class(NcVariable), intent(in) :: self
-    character(*)     , intent(in) :: name
-    real(sp)         , intent(in) :: data
-
-    call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-  end subroutine setVariableAttributeF32
-
-  subroutine setVariableAttributeF64(self, name, data)
-    class(NcVariable), intent(in) :: self
-    character(*)     , intent(in) :: name
-    real(dp)         , intent(in) :: data
-
-    call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-  end subroutine setVariableAttributeF64
-
-  subroutine getVariableAttributeChar(self, name, avalue)
-    class(NcVariable), intent(in)  :: self
-    character(*)     , intent(in)  :: name
-    character(*)     , intent(out) :: avalue
-    integer(i4)                    :: length
-
-    call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
+    class is (NcVariable)
+        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
          "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
+        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
          "Could not read attribute "//name)
-  end subroutine getVariableAttributeChar
-
-  subroutine getVariableAttributeI8(self, name, avalue)
-    class(NcVariable), intent(in)  :: self
-    character(*)     , intent(in)  :: name
-    integer(i1)      , intent(out) :: avalue
-    integer(i4)                    :: length
-
-    call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-  end subroutine getVariableAttributeI8
-
-  subroutine getVariableAttributeI16(self, name, avalue)
-    class(NcVariable), intent(in)  :: self
-    character(*)     , intent(in)  :: name
-    integer(i2)      , intent(out) :: avalue
-    integer(i4)                    :: length
-
-    call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-  end subroutine getVariableAttributeI16
-
-  subroutine getVariableAttributeI32(self, name, avalue)
-    class(NcVariable), intent(in)  :: self
-    character(*)     , intent(in)  :: name
-    integer(i4)      , intent(out) :: avalue
-    integer(i4)                    :: length
-
-    call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-  end subroutine getVariableAttributeI32
-
-  subroutine getVariableAttributeF32(self, name, avalue)
-    class(NcVariable), intent(in)  :: self
-    character(*)     , intent(in)  :: name
-    real(sp)         , intent(out) :: avalue
-    integer(i4)                    :: length
-
-    call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-  end subroutine getVariableAttributeF32
-
-  subroutine getVariableAttributeF64(self, name, avalue)
-    class(NcVariable), intent(in)  :: self
-    character(*)     , intent(in)  :: name
-    real(dp)         , intent(out) :: avalue
-    integer(i4)                    :: length
-
-    call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-    call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-  end subroutine getVariableAttributeF64
-
+    end select
+  end subroutine getAttributeF64
+!TODO
   subroutine setVariableFillValueI8(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     integer(i1)      , intent(in)  :: fvalue
 
     if (.not. self%hasAttribute("_FillValue")) then
@@ -1925,7 +1045,7 @@ contains
   end subroutine setVariableFillValueI8
   
   subroutine setVariableFillValueI16(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     integer(i2)      , intent(in)  :: fvalue
 
     if (.not. self%hasAttribute("_FillValue")) then
@@ -1934,7 +1054,7 @@ contains
   end subroutine setVariableFillValueI16
 
   subroutine setVariableFillValueI32(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     integer(i4)      , intent(in)  :: fvalue
 
     if (.not. self%hasAttribute("_FillValue")) then
@@ -1943,7 +1063,7 @@ contains
   end subroutine setVariableFillValueI32
 
   subroutine setVariableFillValueF32(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     real(sp)         , intent(in)  :: fvalue
 
     if (.not. self%hasAttribute("_FillValue")) then
@@ -1952,7 +1072,7 @@ contains
   end subroutine setVariableFillValueF32
 
   subroutine setVariableFillValueF64(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     real(dp)         , intent(in)  :: fvalue
 
     if (.not. self%hasAttribute("_FillValue")) then
@@ -1961,7 +1081,7 @@ contains
   end subroutine setVariableFillValueF64
 
   subroutine getVariableFillValueI8(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     integer(i1)      , intent(out) :: fvalue
 
     if (self%hasAttribute("_FillValue")) then
@@ -1972,7 +1092,7 @@ contains
   end subroutine getVariableFillValueI8
 
   subroutine getVariableFillValueI16(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     integer(i2)      , intent(out) :: fvalue
 
     if (self%hasAttribute("_FillValue")) then
@@ -1983,7 +1103,7 @@ contains
   end subroutine getVariableFillValueI16
 
   subroutine getVariableFillValueI32(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     integer(i4)      , intent(out) :: fvalue
 
     if (self%hasAttribute("_FillValue")) then
@@ -1994,7 +1114,7 @@ contains
   end subroutine getVariableFillValueI32
 
   subroutine getVariableFillValueF32(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     real(sp)         , intent(out) :: fvalue
 
     if (self%hasAttribute("_FillValue")) then
@@ -2005,7 +1125,7 @@ contains
   end subroutine getVariableFillValueF32
 
   subroutine getVariableFillValueF64(self, fvalue)
-    class(NcVariable), intent(in)  :: self
+    class(NcVariable), intent(inout)  :: self
     real(dp)         , intent(out) :: fvalue
 
     if (self%hasAttribute("_FillValue")) then
