@@ -18,7 +18,10 @@ module mo_netcdf
 
   ! Written  David Schaefer, Jun 2015
   ! Modified Matthias Cuntz, Jan 2016 - compiled with PGI Fortran rev 15.9 - no automatic allocation of left-hand-side
-  
+  ! Modified Ricardo Torres, Fev 2017 - add derived type NcGroup and NcAttribute. NcAttribute is the base derived type,
+  !                          NcDimension, NcGroup and NcVariable all are extended from it. NcDataset is extended from
+  !                          NcGroup. No more duplicated routines to set attributes.
+
   ! License
   ! -------
   ! This file is part of the UFZ Fortran library.
@@ -44,13 +47,12 @@ module mo_netcdf
        nf90_open, nf90_close, nf90_strerror, nf90_def_dim, nf90_def_var,   &
        nf90_put_var, nf90_get_var, nf90_put_att, nf90_get_att,             &
        nf90_inquire, nf90_inq_dimid, nf90_inquire_dimension,               &
-       nf90_inq_varid, nf90_inq_varids, nf90_inquire_variable, nf90_inquire_attribute,      &
+       nf90_inq_varid, nf90_inq_varids, nf90_inquire_variable, nf90_inquire_attribute,     &
+       nf90_inq_ncid, nf90_inq_grp_parent, nf90_inq_grpname, nf90_def_grp, &
        NF90_OPEN, NF90_NETCDF4, NF90_CREATE, NF90_WRITE, NF90_NOWRITE,     &
-       NF90_BYTE, NF90_SHORT, NF90_INT, NF90_FLOAT, NF90_DOUBLE,                      &
+       NF90_BYTE, NF90_SHORT, NF90_INT, NF90_FLOAT, NF90_DOUBLE,           &
        NF90_FILL_BYTE, NF90_FILL_SHORT, NF90_FILL_INT, NF90_FILL_FLOAT , NF90_FILL_DOUBLE, &
-       NF90_NOERR, NF90_UNLIMITED, NF90_GLOBAL, &
-       !Onde estiver: XXX adicionado por mim
-       nf90_inq_ncid, nf90_inq_grp_parent, nf90_inq_grpname
+       NF90_NOERR, NF90_UNLIMITED, NF90_GLOBAL
 
 
   implicit none
@@ -79,16 +81,16 @@ module mo_netcdf
      procedure, private :: getAttributeF64
 
      generic, public :: setAttribute => &
-          setAttributeChar, &
-          setAttributeI8,   &
+          setAttributeChar,  &
+          setAttributeI8,    &
           setAttributeI16,   &
           setAttributeI32,   &
           setAttributeF32,   &
           setAttributeF64
 
      generic, public :: getAttribute => &
-          getAttributeChar, &
-          getAttributeI8,   &
+          getAttributeChar,  &
+          getAttributeI8,    &
           getAttributeI16,   &
           getAttributeI32,   &
           getAttributeF32,   &
@@ -117,11 +119,10 @@ module mo_netcdf
      procedure, private :: getVariableByName
 
      procedure, public  :: hasVariable
-
      procedure, public  :: hasDimension
-     !XXX
      procedure, public  :: hasGroup
-     !XXX
+     
+     procedure, public  :: setGroup
 
      procedure, public  :: getUnlimitedDimension
 
@@ -152,8 +153,6 @@ module mo_netcdf
 
      character(256)                       :: fname !> Filename of the opened dataset
      character(1)                         :: mode  !> File open mode
-!     integer(i4)                          :: id    !> NetCDF id
-!     type(NcGroup)                        :: root
 
    contains
 
@@ -170,7 +169,6 @@ module mo_netcdf
 
   type, extends(NcAttribute) :: NcDimension
 
-!     integer(i4)     :: id      !> The NetCDF dimension id
      type(NcGroup) :: parent  !> The dimension's parent
 
    contains
@@ -197,9 +195,7 @@ module mo_netcdf
 
   type, extends(NcAttribute) :: NcVariable
 
-!     integer(i4)     :: id       !> Variable id
      type(NcGroup) :: parent   !> The variables's parent
-     ! character(256)  :: name     !> Variable name
 
    contains
 
@@ -356,14 +352,14 @@ module mo_netcdf
           getData5dF64
 
      generic, public :: setFillValue => &
-          setVariableFillValueI8, &
+          setVariableFillValueI8,  &
           setVariableFillValueI16, &
           setVariableFillValueI32, &
           setVariableFillValueF32, &
           setVariableFillValueF64
 
      generic, public :: getFillValue => &
-          getVariableFillValueI8, &
+          getVariableFillValueI8,  &
           getVariableFillValueI16, &
           getVariableFillValueI32, &
           getVariableFillValueF32, &
@@ -419,7 +415,6 @@ contains
     self%mode  = mode
     call self%getgroupname(self%name)
   end subroutine initNcDataset
-!XXX
 
   subroutine initNcGroup(self, name, parent)
     class(NcGroup), intent(inout) :: self
@@ -429,15 +424,6 @@ contains
     call check(nf90_inq_ncid(parent%id,name,self%id),"Group does not exist")
     self%name=name
   end subroutine initNcGroup
-
-!  subroutine moveuptoGroup(self, name)
-!    class(NcGroup), intent(inout) :: self
-!    character(*)    , intent(in)    :: name
-!    integer(i4)                     :: tmpid
-
-!    call check(nf90_inq_ncid(self%id,name,tmpid),"Group does not exist")
-!    self%id=tmpid
-!  end subroutine moveuptoGroup
 
   integer(i4) function groupparentid(self)
     class(NcAttribute), intent(inout) :: self
@@ -457,7 +443,15 @@ contains
     call check(nf90_inq_grpname(self%id,name),"failed to read group name")
   end subroutine getgroupname
 
-!XXX
+  subroutine setGroup(self,name, newGroup )
+    class(NcGroup), intent(inout) :: self
+    character(*)  , intent(in)    :: name
+    class(NcGroup), intent(out)   :: newGroup
+
+    newGroup%name=name
+    call check(nf90_def_grp(self%id, name, newGroup%id),"failed to create new group")
+  end subroutine setGroup
+
   type(NcVariable) function newNcVariable(id, parent)
     integer(i4)    , intent(in) :: id
     type(NcGroup), intent(in) :: parent
@@ -618,7 +612,7 @@ contains
 
     hasDimension = (nf90_inq_dimid(self%id,name,tmpid) .eq. NF90_NOERR)
   end function hasDimension
-!XXX
+
   function hasGroup(self, name)
     class(NcGroup), intent(in) :: self
     character(*)    , intent(in) :: name
@@ -627,7 +621,7 @@ contains
 
     hasGroup = (nf90_inq_ncid(self%id,name,tmpid) .eq. NF90_NOERR)
   end function hasGroup
-!XXX
+
   function setVariableWithIds(self, name, dtype, dimensions, contiguous, &
        chunksizes, deflate_level, shuffle, fletcher32, endianness, &
        cache_size, cache_nelems, cache_preemption)
@@ -809,7 +803,6 @@ contains
     end do
   end function isUnlimitedVariable
 
-!XXX
   logical function hasAttribute(self,name)
     class(NcAttribute), intent(inout) :: self
     character(*)     , intent(in) :: name
@@ -824,7 +817,7 @@ contains
     
     hasAttribute = (status .eq. NF90_NOERR)
   end function hasAttribute
-!TODO
+
   subroutine setAttributeChar(self, name, data)
     class(NcAttribute), intent(in) :: self
     character(*)    , intent(in) :: name
@@ -1034,7 +1027,7 @@ contains
          "Could not read attribute "//name)
     end select
   end subroutine getAttributeF64
-!TODO
+
   subroutine setVariableFillValueI8(self, fvalue)
     class(NcVariable), intent(inout)  :: self
     integer(i1)      , intent(in)  :: fvalue

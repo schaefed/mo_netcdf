@@ -20,11 +20,12 @@ The below examples can be found in examples.f90.
 Write a netcdf file:
 
 ```fortran
-use mo_netcdf, only: NcDataset, NcDimension, NcVariable
+use mo_netcdf, only: NcDataset, NcDimension, NcVariable, NcGroup
 
 type(NcDataset)   :: nc
 type(NcDimension) :: dim1, dim2, dim3
 type(NcVariable)  :: var
+type(NcGroup)     :: grp
 
 ! some data
 integer, parameter :: nx=10, ny=20, ntime=8
@@ -37,21 +38,26 @@ data = 42
 !     filename
 !     mode ("w": write, "r": read-only, "a": read-write)
 nc = NcDataset("test.nc", "w") 
+! create a group
+! args:
+!     group name
+!     group variable
+call nc%setGroup("group",grp)
 
 ! create dimensions
 ! args:
 !     dimension name 
 !     dimension length (< 0 for an unlimited dimension)
-dim1 = nc%setDimension("time", -1)
-dim2 = nc%setDimension("y", ny)
-dim3 = nc%setDimension("x", nx)
+dim1 = grp%setDimension("time", -1)
+dim2 = grp%setDimension("y", ny)
+dim3 = grp%setDimension("x", nx)
 
 ! set a variable
 ! args:
 !     variable name
 !     data type (currently available: "i8", "i16", "i32", "f32", "f64")
 !     dimensions array
-var = nc%setVariable("data", "i32", (/dim3, dim2, dim1/))
+var = grp%setVariable("data", "i32", (/dim3, dim2, dim1/))
 
 ! define a fill value
 ! args:
@@ -85,6 +91,11 @@ do i = ntime+2, ntime+12
     call var%setData(data(:,:,1)+i,start=(/1,1,i/))
 end do
 
+! add a group attribute, attributes can be set to any of the data structures
+! args:
+!    name
+!    any of the supported datatypes
+call grp%setAttribute("auxiliar author", "Ricardo Torres")
 ! add a global attribute
 ! args:
 !    name
@@ -99,20 +110,26 @@ Read data from file:
 
 ```fortran
 
-use mo_netcdf, only: NcDataset, NcDimension, NcVariable
+use mo_netcdf, only: NcDataset, NcDimension, NcVariable, NcGroup
 
 type(NcDataset)   :: nc
 type(NcVariable)  :: var
+type(NcGroup)     :: grp
 
 integer, allocatable :: data(:,:,:)
+integer :: att_val
+character(len=80) :: author1, author2
 
 ! open a dataset in read(-write) mode
 nc = NcDataset("test.nc", "r")
+('scale_factor',scale_factor)
+! open the group where the data is
+grp=NcGroup("group",nc)
 
 ! access a variable
 ! args:
 !     variable name
-var = nc%getVariable("data")
+var = grp%getVariable("data")
 
 ! read data
 ! args:
@@ -129,6 +146,11 @@ call var%getData(data, start=(/1,1,10/))
 call var%getData(data, count=(/5,5,10/))
 ! read every second timestep starting from the 3
 call var%getData(data, start=(/1,1,3/), stride=(/1,1,2/))
+
+! read attributes
+call var%getAttribute('attr1',att_val)
+call grp%getAttribute('auxiliar author',author2)
+call nc %getAttribute('author',author1)
 
 call nc%close()
 

@@ -1,13 +1,14 @@
 program example_mo_netcdf
 
   use mo_kind  , only : i4, sp, dp
-  use mo_netcdf, only: NcDataset, NcDimension, NcVariable
+  use mo_netcdf, only: NcDataset, NcDimension, NcVariable, NcGroup
 
   implicit none
   
   type(NcDataset)   :: nc
   type(NcDimension) :: dim1, dim2, dim3
   type(NcVariable)  :: var
+  type(NcGroup)     :: grp
 
   ! some data
   integer(i4), parameter :: nx=10, ny=20, ntime=8
@@ -19,22 +20,23 @@ program example_mo_netcdf
   ! args:
   !     filename
   !     mode ("w": write, "r": read-only, "a": read-write)
-  nc = NcDataset("test.nc", "w") 
+  nc = NcDataset("test.nc", "w")
+  call nc%setGroup('group',grp)
 
   ! create dimensions
   ! args:
   !     dimension name 
   !     dimension length (< 0 for an unlimited dimension)
-  dim1 = nc%setDimension("time", -1)
-  dim2 = nc%setDimension("y", ny)
-  dim3 = nc%setDimension("x", nx)
+  dim1 = grp%setDimension("time", -1)
+  dim2 = grp%setDimension("y", ny)
+  dim3 = grp%setDimension("x", nx)
 
   ! set a variable
   ! args:
   !     variable name
   !     data type (currently available: "i8", "i16", "i32", "f32", "f64")
   !     dimensions array
-  var = nc%setVariable("data", "i32", (/dim3, dim2, dim1/))
+  var = grp%setVariable("data", "i32", (/dim3, dim2, dim1/))
 
   ! define a fill value
   ! args:
@@ -68,6 +70,11 @@ program example_mo_netcdf
      call var%setData(data(:,:,1)+i,start=(/1,1,i/))
   end do
 
+  ! add a group attribute, attributes can be set to any of the data structures
+  ! args:
+  !    name
+  !    any of the supported datatypes
+  call grp%setAttribute("auxiliar author", "Ricardo Torres")
   ! add a global attribute
   ! args:
   !    name
