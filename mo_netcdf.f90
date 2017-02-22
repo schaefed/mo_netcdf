@@ -2,11 +2,12 @@
 
 !> \brief NetCDF Fortran 90 interface wrapper
 
-!> \details A thin wrapper around the NetCDF Fortran 90 interface.
-!>          Provided are currently 3 user facing derived Types:
+!> \details A wrapper around the NetCDF Fortran 90 interface.
+!>          Provided are 4 user facing derived Types:
 !>             1. NcDataset
-!>             2. NcDimension
-!>             3. NcVariable
+!>             2. NcGroup
+!>             3. NcDimension
+!>             4. NcVariable
 !
 !> \authors David Schaefer
 !> \date Jun 2015
@@ -112,9 +113,9 @@ module mo_netcdf
 
      procedure, private :: getDimensionByName
      procedure, private :: getDimensionById
-     procedure, private :: getVariableByName
 
      procedure, public  :: getName => getGroupName
+     procedure, public  :: getGroup => getGroupByName
      procedure, public  :: getVariable => getVariableByName
      generic,   public  :: getDimension => &
           getDimensionById, &
@@ -488,7 +489,7 @@ contains
   end function getVariableIds
   
   function getVariables(self)
-    class(NcGroup), intent(in)                :: self
+    class(NcGroup), intent(in)                  :: self
     type(NcVariable), dimension(:), allocatable :: getVariables
     integer(i4), dimension(:), allocatable      :: varids
     integer(i4)                                 :: i, nvars
@@ -698,6 +699,17 @@ contains
          "Could not inquire dimension: " // name)
     getDimensionByName = self%getDimensionById(id)
   end function getDimensionByName
+
+  function getGroupByName(self, name)
+    class(NcGroup), intent(in) :: self
+    character(*)  , intent(in) :: name
+    type(NcGroup)              :: getGroupByName
+    integer(i4)                :: id
+
+    call check(nf90_inq_ncid(self%id, name, id), &
+         "Could not inquire variable: " // name)
+    getGroupByName = NcGroup(id)
+  end function getGroupByName
 
   function getVariableByName(self, name)
     class(NcGroup), intent(in) :: self

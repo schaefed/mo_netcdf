@@ -1,4 +1,4 @@
-program example_mo_netcdf
+program example_write
 
   use mo_kind  , only : i4, sp, dp
   use mo_netcdf, only: NcDataset, NcDimension, NcVariable, NcGroup
@@ -20,8 +20,8 @@ program example_mo_netcdf
   ! args:
   !     filename
   !     mode ("w": write, "r": read-only, "a": read-write)
-  nc = NcDataset("test.nc", "w")
-  call nc%setGroup('group',grp)
+  nc  = NcDataset("test.nc", "w")
+  grp = nc%setGroup("group")
 
   ! create dimensions
   ! args:
@@ -62,15 +62,15 @@ program example_mo_netcdf
   call var%setData(data)
   ! write one value at position (5,5,1) (indexing: x, y, time)
   call var%setData(21, start=(/5,5,1/))
-  ! write on 2D array into the 3D data array at position (1,1,4)
+  ! write a 2D array into the 3D data array at position (1,1,4)
   call var%setData(data(:,:,1)/2, start=(/1,1,4/))
 
   ! dynamically append some data along the time dimension
   do i = ntime+2, ntime+12
-     call var%setData(data(:,:,1)+i,start=(/1,1,i/))
+     call var%setData(data(:,:,1)+i, start=(/1,1,i/))
   end do
 
-  ! add a group attribute, attributes can be set to any of the data structures
+  ! add a group attribute, attributes can be set to NcDataset, NcGroup and NcVariable
   ! args:
   !    name
   !    any of the supported datatypes
@@ -79,9 +79,9 @@ program example_mo_netcdf
   ! args:
   !    name
   !    any of the supported datatypes
-  call nc%setAttribute("author", "Alfred Mustermann")
+  call nc%setAttribute("author", "David Schaefer")
 
   ! close the dataset
   call nc%close()
 
-end program example_mo_netcdf
+end program example_write

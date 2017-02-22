@@ -38,11 +38,12 @@ data = 42
 !     filename
 !     mode ("w": write, "r": read-only, "a": read-write)
 nc = NcDataset("test.nc", "w") 
+
 ! create a group
 ! args:
 !     group name
 !     group variable
-call nc%setGroup("group",grp)
+grp = nc%setGroup("group")
 
 ! create dimensions
 ! args:
@@ -157,9 +158,22 @@ call nc%close()
 ```
 
 # Restrictions
-The current implementation provides a fairly larg subset of the NetCDF Fortran 90 interface as 
+The current implementation provides a subset of the NetCDF Fortran 90 interface as 
 described in the [User's Guide](http://www.csar.cfs.ac.uk/user_information/software/environment/guide.book.pdf).
-Beside some minor functionality (e.g. ```nf90_rename_var```) the most important shortcoming is the missing 
-group support. This can and will be fixed as soon as this functionality is needed by the author or contributed.
-
+Some of the current restrictions:
+  - The netcdf library version is not accessible (```nf90_inq_libvers```)
+  - New files are always created in ```NF90_NETCDF4``` mode
+  - File syncing (```nf90_sync```)
+  - Dataset fill mode settings (```nf90_set_fill```)
+  - Accessing group parents (```nf90_inq_grp_parent```)
+  - Full group names (```nf90_inq_grpname_full```)
+  - Dimension renaming (```nf90_rename_dim```)
+  - Variables are limited to 5 dimensions
+  - Variable renaming (```nf90_rename_var```)
+  - Accessing variable settings (e.g. ```nf90_inq_var_chunking```, ```nf90_inq_var_fill```, ```nf90_inq_var_deflate```)
+  - User defined data types
+  - Attribute renaming (```nf90_rename_att```)
+  - Attributes deletion (```nf90_del_att```)
+  - Attributes of array types
+  
 
