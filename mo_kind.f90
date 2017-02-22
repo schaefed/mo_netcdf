@@ -5,30 +5,31 @@
 !> \details This module declares the desired ranges and precisions of the number representations,
 !> It confirms mostly with the nrtype module of Numerical Recipes in f90.
 
-!  Number model from which the SELECTED_REAL_KIND are requested:
-!                   4 byte REAL      8 byte REAL
-!          IEEE:    precision =  6   precision =   15
-!                   exponent  = 37   exponent  =  307
-!          CRAY:        -            precision =   13
-!                                    exponent  = 2465
+!> \authors Juliane Mai, Matthias Cuntz, Nov 2011
+!> \date Nov 2011
 
-! Written  Juliane Mai, Matthias Cuntz, Nov 2011
-! Modified Matthias Cuntz, Nov 2011 - private/public
-!                                   - documentation
-!                                   - removed tab characters
-!          Matthias Cuntz, May 2014 - iso_fortran_env and iso_c_binding
-!          David Schaefer, Mar 2016 - cleanup, changed c_long to c_long_long  
-!          David Schaefer, Feb 2017 - changed names
-!
-! License
-! -------
-! GNU Lesser General Public License http://www.gnu.org/licenses/
-
-! Copyright 
-! ---------
-! 2011-2017 Matthias Cuntz, Juliane Mai, David Schaefer
 
 module mo_kind
+
+  !  Number model from which the SELECTED_REAL_KIND are requested:
+  !                   4 byte REAL      8 byte REAL
+  !          IEEE:    precision =  6   precision =   15
+  !                   exponent  = 37   exponent  =  307
+  !          CRAY:        -            precision =   13
+  !                                    exponent  = 2465
+  
+  ! Written  Juliane Mai, Matthias Cuntz, Nov 2011
+  ! Modified Matthias Cuntz, Nov 2011 - private/public
+  !                                   - documentation
+  !                                   - removed tab characters
+  !          Matthias Cuntz, May 2014 - iso_fortran_env and iso_c_binding
+  !          David Schaefer, Mar 2016 - cleanup, changed c_long to c_long_long  
+  !          David Schaefer, Feb 2017 - changed names
+  !
+  ! License
+  ! -------
+  ! GNU Lesser General Public License http://www.gnu.org/licenses/
+
 
   ! Does not work with compilers intel v11 and sun v12.2
   use, intrinsic :: iso_c_binding,   only: &
