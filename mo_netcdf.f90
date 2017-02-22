@@ -18,9 +18,9 @@ module mo_netcdf
 
   ! Written  David Schaefer, Jun 2015
   ! Modified Matthias Cuntz, Jan 2016 - compiled with PGI Fortran rev 15.9 - no automatic allocation of left-hand-side
-  ! Modified Ricardo Torres, Fev 2017 - add derived type NcGroup and NcAttribute. NcAttribute is the base derived type,
-  !                          NcDimension, NcGroup and NcVariable all are extended from it. NcDataset is extended from
-  !                          NcGroup. No more duplicated routines to set attributes.
+  ! Modified Ricardo Torres, Fev 2017 - add derived type NcGroup and NcAttributable. NcAttributable is the base derived type,
+  !                          NcGroup and NcVariable are extended from it. NcDataset is extended from NcGroup. No more
+  !                          duplicated routines to set attributes.
 
   ! License
   ! -------
@@ -59,12 +59,10 @@ module mo_netcdf
 
   ! --------------------------------------------------------------------------------------
 
-  type :: NcAttribute
-    integer(kind=i4) :: id
+  type :: NcAttributable
+
    contains
      procedure, public  :: hasAttribute
-     procedure, public  :: groupparentid
-     procedure, public  :: getgroupname
      
      procedure, private :: setAttributeChar
      procedure, private :: setAttributeI8
@@ -95,52 +93,51 @@ module mo_netcdf
           getAttributeI32,   &
           getAttributeF32,   &
           getAttributeF64
-  end type NcAttribute
+  end type NcAttributable
 
   ! --------------------------------------------------------------------------------------
 
-  type, extends(NcAttribute) :: NcGroup
-     character(len=256)  :: name
+  type, extends(NcAttributable) :: NcGroup
+
+     integer(kind=i4) :: id
      
   contains
      procedure, public  :: initNcGroup
 
-     procedure, public  :: getNoVariables
+     ! getter
      procedure, public  :: getVariableIds
      procedure, public  :: getVariables
-     
+     procedure, public  :: getUnlimitedDimension
+     procedure, public  :: getNoVariables
+
      procedure, private :: getDimensionByName
      procedure, private :: getDimensionById
-
-     procedure, private :: setVariableWithTypes
-     procedure, private :: setVariableWithNames
-     procedure, private :: setVariableWithIds
-
      procedure, private :: getVariableByName
 
-     procedure, public  :: hasVariable
-     procedure, public  :: hasDimension
-     procedure, public  :: hasGroup
-     
-     procedure, public  :: setGroup
-
-     procedure, public  :: getUnlimitedDimension
-
-     procedure, public  :: isUnlimited => isDatasetUnlimited
-
-     procedure, public  :: setDimension
-
+     procedure, public  :: getName => getGroupName
+     procedure, public  :: getVariable => getVariableByName
      generic,   public  :: getDimension => &
           getDimensionById, &
           getDimensionByName
+
+     ! checker
+     procedure, public  :: hasVariable
+     procedure, public  :: hasDimension
+     procedure, public  :: hasGroup
+     procedure, public  :: isUnlimited => isDatasetUnlimited
+
+     ! setter
+     procedure, public  :: setGroup
+     procedure, public  :: setDimension
+     procedure, private :: setVariableWithTypes
+     procedure, private :: setVariableWithNames
+     procedure, private :: setVariableWithIds
 
      generic,   public  :: setVariable => &
           setVariableWithNames, &
           setVariableWithTypes, &
           setVariableWithIds
 
-     generic,  public  :: getVariable => &
-          getVariableByName
   end type NcGroup
 
   interface NcGroup
@@ -151,13 +148,13 @@ module mo_netcdf
 
   type, extends(NcGroup) :: NcDataset
 
-     character(256)                       :: fname !> Filename of the opened dataset
-     character(1)                         :: mode  !> File open mode
+     character(256) :: fname !> Filename of the opened dataset
+     character(1)   :: mode  !> File open mode
 
    contains
 
-     procedure, public  :: initNcDataset
-     procedure, public  :: close
+     procedure, public :: initNcDataset
+     procedure, public :: close
 
   end type NcDataset
 
@@ -167,16 +164,16 @@ module mo_netcdf
 
 ! --------------------------------------------------------------------------------------
 
-  type, extends(NcAttribute) :: NcDimension
+  type :: NcDimension
 
-     type(NcGroup) :: parent  !> The dimension's parent
+     integer(kind=i4)   :: id
+     type(NcGroup) ::  parent  !> The dimension's parent, should be a function
 
    contains
 
      procedure, public :: initNcDimension
      
      procedure, public :: getName => getDimensionName
-
      procedure, public :: getLength => getDimensionLength
 
      procedure, public :: isUnlimited => isUnlimitedDimension
@@ -193,9 +190,10 @@ module mo_netcdf
 
 ! --------------------------------------------------------------------------------------
 
-  type, extends(NcAttribute) :: NcVariable
+  type, extends(NcAttributable) :: NcVariable
 
-     type(NcGroup) :: parent   !> The variables's parent
+     integer(kind=i4)   :: id
+     type(NcGroup)      :: parent   !> The variables's parent
 
    contains
 
@@ -376,7 +374,7 @@ contains
   subroutine initNcVariable(self, id, parent)
     class(NcVariable), intent(inout) :: self
     integer(i4)      , intent(in)    :: id
-    type(NcGroup)  , intent(in)    :: parent
+    type(NcGroup)    , intent(in)      :: parent
 
     self%id     = id
     self%parent = parent
@@ -413,47 +411,24 @@ contains
 
     self%fname = fname
     self%mode  = mode
-    call self%getgroupname(self%name)
   end subroutine initNcDataset
 
-  subroutine initNcGroup(self, name, parent)
+  subroutine initNcGroup(self, id)
     class(NcGroup), intent(inout) :: self
-    character(*)    , intent(in)    :: name
-    class(NcGroup)   , intent(in)    :: parent
+    integer(i4)   , intent(in)    :: id
     
-    call check(nf90_inq_ncid(parent%id,name,self%id),"Group does not exist")
-    self%name=name
+    self%id = id
   end subroutine initNcGroup
 
-  integer(i4) function groupparentid(self)
-    class(NcAttribute), intent(inout) :: self
-    integer(kind=4) :: status
-    integer(kind=4) :: id
+  function getGroupName(self)
+    class(NcGroup), intent(in) :: self
+    character(256)             :: getGroupName
 
-    status = nf90_inq_grp_parent(self%id,groupparentid)
-    if( status/=0 ) then
-      groupparentid=self%id
-    end if
-  end function groupparentid
-
-  subroutine getgroupname(self, name)
-    class(NcAttribute), intent(in)    :: self
-    character(*)  , intent(out)   :: name
-
-    call check(nf90_inq_grpname(self%id,name),"failed to read group name")
-  end subroutine getgroupname
-
-  subroutine setGroup(self,name, newGroup )
-    class(NcGroup), intent(inout) :: self
-    character(*)  , intent(in)    :: name
-    class(NcGroup), intent(out)   :: newGroup
-
-    newGroup%name=name
-    call check(nf90_def_grp(self%id, name, newGroup%id),"failed to create new group")
-  end subroutine setGroup
+    call check(nf90_inq_grpname(self%id, getGroupName), "Failed to inquire group name")
+  end function getGroupName
 
   type(NcVariable) function newNcVariable(id, parent)
-    integer(i4)    , intent(in) :: id
+    integer(i4)  , intent(in) :: id
     type(NcGroup), intent(in) :: parent
 
     call newNcVariable%initNcVariable(id, parent)
@@ -473,11 +448,10 @@ contains
     call newNcDataset%initNcDataset(fname,mode)
   end function newNcDataset
 
-  type(NcGroup) function newNcGroup(name, parent)
-    class(NcGroup), intent(in) :: parent
-    character(*),  intent(in) :: name
+  type(NcGroup) function newNcGroup(id)
+    integer(i4)    , intent(in) :: id
 
-    call newNcGroup%initNcGroup(name, parent)
+    call newNcGroup%initNcGroup(id)
   end function newNcGroup
 
   subroutine close(self)
@@ -485,6 +459,17 @@ contains
 
     call check(nf90_close(self%id), "Failed to close file: "//self%fname)
   end subroutine close
+
+
+  type(NcGroup) function setGroup(self, name)
+    class(NcGroup), intent(inout) :: self
+    character(*)  , intent(in)    :: name
+    integer(i4)                   :: id
+
+    call check(nf90_def_grp(self%id, name, id), "Failed to create new group: " // name)
+    setGroup = NcGroup(id)
+  end function setGroup
+
 
   function getNoVariables(self)
     class(NcGroup), intent(in) :: self
@@ -540,7 +525,7 @@ contains
     integer(i4)                  :: dimid
 
     call check(nf90_inquire(self%id,unlimitedDimId=dimid), &
-         "Failed to inquire group "//self%name)
+         "Failed to inquire group "//self%getName())
     isDatasetUnlimited = (dimid .ne. -1)
   end function isDatasetUnlimited
 
@@ -550,7 +535,7 @@ contains
     integer(i4)                  :: dimid
 
     call check(nf90_inquire(self%id,unlimitedDimId=dimid), &
-         "Failed to inquire group "//self%name)
+         "Failed to inquire group "//self%getName())
 
     if (dimid .eq. -1) then
        write(*,*) "Dataset has no unlimited dimension"
@@ -804,7 +789,7 @@ contains
   end function isUnlimitedVariable
 
   logical function hasAttribute(self,name)
-    class(NcAttribute), intent(inout) :: self
+    class(NcAttributable), intent(inout) :: self
     character(*)     , intent(in) :: name
     integer(i4)                   :: status
 
@@ -819,22 +804,22 @@ contains
   end function hasAttribute
 
   subroutine setAttributeChar(self, name, data)
-    class(NcAttribute), intent(in) :: self
+    class(NcAttributable), intent(in) :: self
     character(*)    , intent(in) :: name
     character(*)    , intent(in) :: data
 
     select type (self)
     class is (NcGroup)
-        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
+        call check(nf90_put_att(self%id, NF90_GLOBAL, name, data), &
          "Failed to write attribute: " // name )
     class is (NcVariable)
-        call check(nf90_put_att(self%parent%id,self%id,name,data), &
+        call check(nf90_put_att(self%parent%id, self%id, name, data), &
          "Failed to write attribute: " // name )
     end select
   end subroutine setAttributeChar
 
   subroutine setAttributeI8(self, name, data)
-    class(NcAttribute), intent(in) :: self
+    class(NcAttributable), intent(in) :: self
     character(*)    , intent(in) :: name
     integer(i1)     , intent(in) :: data
 
@@ -849,7 +834,7 @@ contains
   end subroutine setAttributeI8
 
   subroutine setAttributeI16(self, name, data)
-    class(NcAttribute), intent(in) :: self
+    class(NcAttributable), intent(in) :: self
     character(*)    , intent(in) :: name
     integer(i2)     , intent(in) :: data
 
@@ -864,7 +849,7 @@ contains
   end subroutine setAttributeI16
 
   subroutine setAttributeI32(self, name, data)
-    class(NcAttribute), intent(in) :: self
+    class(NcAttributable), intent(in) :: self
     character(*)    , intent(in) :: name
     integer(i4)     , intent(in) :: data
 
@@ -879,7 +864,7 @@ contains
   end subroutine setAttributeI32
 
   subroutine setAttributeF32(self, name, data)
-    class(NcAttribute), intent(in) :: self
+    class(NcAttributable), intent(in) :: self
     character(*)    , intent(in) :: name
     real(sp)        , intent(in) :: data
 
@@ -894,7 +879,7 @@ contains
   end subroutine setAttributeF32
 
   subroutine setAttributeF64(self, name, data)
-    class(NcAttribute), intent(in) :: self
+    class(NcAttributable), intent(in) :: self
     character(*)    , intent(in) :: name
     real(dp)        , intent(in) :: data
 
@@ -909,7 +894,7 @@ contains
   end subroutine setAttributeF64
 
   subroutine getAttributeChar(self, name, avalue)
-    class(NcAttribute), intent(in)  :: self
+    class(NcAttributable), intent(in)  :: self
     character(*)    , intent(in)  :: name
     character(*)    , intent(out) :: avalue
     integer(i4)                   :: length
@@ -929,7 +914,7 @@ contains
   end subroutine getAttributeChar
 
   subroutine getAttributeI8(self, name, avalue)
-    class(NcAttribute), intent(in)  :: self
+    class(NcAttributable), intent(in)  :: self
     character(*)    , intent(in)  :: name
     integer(i1)     , intent(out) :: avalue
     integer(i4)                   :: length
@@ -949,7 +934,7 @@ contains
   end subroutine getAttributeI8
 
   subroutine getAttributeI16(self, name, avalue)
-    class(NcAttribute), intent(in)  :: self
+    class(NcAttributable), intent(in)  :: self
     character(*)    , intent(in)  :: name
     integer(i2)     , intent(out) :: avalue
     integer(i4)                   :: length
@@ -969,7 +954,7 @@ contains
   end subroutine getAttributeI16
 
   subroutine getAttributeI32(self, name, avalue)
-    class(NcAttribute), intent(in)  :: self
+    class(NcAttributable), intent(in)  :: self
     character(*)    , intent(in)  :: name
     integer(i4)     , intent(out) :: avalue
     integer(i4)                   :: length
@@ -989,7 +974,7 @@ contains
   end subroutine getAttributeI32
 
   subroutine getAttributeF32(self, name, avalue)
-    class(NcAttribute), intent(in)  :: self
+    class(NcAttributable), intent(in)  :: self
     character(*)    , intent(in)  :: name
     real(sp)        , intent(out) :: avalue
     integer(i4)                   :: length
@@ -1009,7 +994,7 @@ contains
   end subroutine getAttributeF32
 
   subroutine getAttributeF64(self, name, avalue)
-    class(NcAttribute), intent(in)  :: self
+    class(NcAttributable), intent(in)  :: self
     character(*)    , intent(in)  :: name
     real(dp)        , intent(out) :: avalue
     integer(i4)                   :: length
