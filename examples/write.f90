@@ -1,13 +1,14 @@
-program example_mo_netcdf
+program example_write
 
   use mo_kind  , only : i4, sp, dp
-  use mo_netcdf, only: NcDataset, NcDimension, NcVariable
+  use mo_netcdf, only: NcDataset, NcDimension, NcVariable, NcGroup
 
   implicit none
   
   type(NcDataset)   :: nc
   type(NcDimension) :: dim1, dim2, dim3
   type(NcVariable)  :: var
+  type(NcGroup)     :: grp
 
   ! some data
   integer(i4), parameter :: nx=10, ny=20, ntime=8
@@ -19,22 +20,23 @@ program example_mo_netcdf
   ! args:
   !     filename
   !     mode ("w": write, "r": read-only, "a": read-write)
-  nc = NcDataset("test.nc", "w") 
+  nc  = NcDataset("test.nc", "w")
+  grp = nc%setGroup("group")
 
   ! create dimensions
   ! args:
   !     dimension name 
   !     dimension length (< 0 for an unlimited dimension)
-  dim1 = nc%setDimension("time", -1)
-  dim2 = nc%setDimension("y", ny)
-  dim3 = nc%setDimension("x", nx)
+  dim1 = grp%setDimension("time", -1)
+  dim2 = grp%setDimension("y", ny)
+  dim3 = grp%setDimension("x", nx)
 
   ! set a variable
   ! args:
   !     variable name
   !     data type (currently available: "i8", "i16", "i32", "f32", "f64")
   !     dimensions array
-  var = nc%setVariable("data", "i32", (/dim3, dim2, dim1/))
+  var = grp%setVariable("data", "i32", (/dim3, dim2, dim1/))
 
   ! define a fill value
   ! args:
@@ -60,21 +62,26 @@ program example_mo_netcdf
   call var%setData(data)
   ! write one value at position (5,5,1) (indexing: x, y, time)
   call var%setData(21, start=(/5,5,1/))
-  ! write on 2D array into the 3D data array at position (1,1,4)
+  ! write a 2D array into the 3D data array at position (1,1,4)
   call var%setData(data(:,:,1)/2, start=(/1,1,4/))
 
   ! dynamically append some data along the time dimension
   do i = ntime+2, ntime+12
-     call var%setData(data(:,:,1)+i,start=(/1,1,i/))
+     call var%setData(data(:,:,1)+i, start=(/1,1,i/))
   end do
 
+  ! add a group attribute, attributes can be set to NcDataset, NcGroup and NcVariable
+  ! args:
+  !    name
+  !    any of the supported datatypes
+  call grp%setAttribute("auxiliar author", "Ricardo Torres")
   ! add a global attribute
   ! args:
   !    name
   !    any of the supported datatypes
-  call nc%setAttribute("author", "Alfred Mustermann")
+  call nc%setAttribute("author", "David Schaefer")
 
   ! close the dataset
   call nc%close()
 
-end program example_mo_netcdf
+end program example_write
