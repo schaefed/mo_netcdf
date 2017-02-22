@@ -1,21 +1,21 @@
 #mo_netcdf
 
 #General
-A somewhat object-oriented wrapper around the NetCDF Fortran 90 interface.
+A object-oriented wrapper around the NetCDF Fortran 90 interface.
 
 #Requirements
 - NetCDF fortran 90 interface
+- A Fortran2003 compatible compiler
 
 #Compiler support
-The module is tested with the following compilers:
+The module is tested to work with the following compilers:
 - GNU gfortran 4.8
-- Intel ifort 13.1 
+- ~~Intel ifort 13.1~~
 - NAG nagfor 6.0
 - PGI pgfortran 15.9
 
 #Usage
-More detailed information about routine/interface signatures can be found in mo_netcdf.f90
-The below examples can be found in examples.f90.
+The below examples can be found in the examples folder.
 
 Write a netcdf file:
 
@@ -110,7 +110,6 @@ call nc%close()
 Read data from file:
 
 ```fortran
-
 use mo_netcdf, only: NcDataset, NcDimension, NcVariable, NcGroup
 
 type(NcDataset)   :: nc
@@ -118,14 +117,14 @@ type(NcVariable)  :: var
 type(NcGroup)     :: grp
 
 integer, allocatable :: data(:,:,:)
-integer :: att_val
-character(len=80) :: author1, author2
+integer              :: att_val
+character(len=80)    :: author1, author2
 
-! open a dataset in read(-write) mode
+! open a dataset in read-only mode
 nc = NcDataset("test.nc", "r")
-('scale_factor',scale_factor)
+
 ! open the group where the data is
-grp=NcGroup("group",nc)
+grp = nc%getGroup("group")
 
 ! access a variable
 ! args:
@@ -141,20 +140,22 @@ var = grp%getVariable("data")
 !     map    (optional): see nf90_put_var 
 ! read the entire variable
 call var%getData(data)
+
 ! read all but the first 10 time steps
 call var%getData(data, start=(/1,1,10/))
+
 ! read the first 5 columns and rows of the first 10 timesteps
-call var%getData(data, count=(/5,5,10/))
+call var%getData(data, cnt=(/5,5,10/))
+
 ! read every second timestep starting from the 3
 call var%getData(data, start=(/1,1,3/), stride=(/1,1,2/))
 
 ! read attributes
-call var%getAttribute('attr1',att_val)
-call grp%getAttribute('auxiliar author',author2)
-call nc %getAttribute('author',author1)
+call var%getAttribute('attr2', att_val)
+call grp%getAttribute('auxiliar author', author2)
+call nc %getAttribute('author', author1)
 
 call nc%close()
-
 ```
 
 # Restrictions
