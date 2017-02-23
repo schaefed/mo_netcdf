@@ -160,7 +160,7 @@ call nc%close()
 
 # Restrictions
 The current implementation provides a subset of the NetCDF Fortran 90 interface as 
-described in the [User's Guide](http://www.csar.cfs.ac.uk/user_information/software/environment/guide.book.pdf).
+described in the [User's Guide](http://www.unidata.ucar.edu/software/netcdf//old_docs/docs_4_1_1/netcdf-f90.pdf).
 Some of the current restrictions:
   - The netcdf library version is not accessible (```nf90_inq_libvers```)
   - New files are always created in ```NF90_NETCDF4``` mode
