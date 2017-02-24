@@ -39,16 +39,20 @@ module mo_netcdf
 
   ! --------------------------------------------------------------------------------------
   type, abstract :: NcBase
+
      integer(i32) :: id
+
    contains
+
      procedure(getNameInterface), deferred   :: getName
      procedure(getParentInterface), deferred :: getParent
-     ! procedure, private                      :: getParentId
+
   end type NcBase
   
   type, abstract, extends(NcBase) :: NcAttributable
 
    contains
+
      procedure, public  :: hasAttribute
      
      procedure, private :: setAttributeChar
@@ -87,7 +91,6 @@ module mo_netcdf
   type, extends(NcAttributable) :: NcGroup
 
   contains
-     procedure, public  :: initNcGroup
 
      ! getter
      procedure, public  :: getVariableIds
@@ -139,7 +142,6 @@ module mo_netcdf
 
    contains
 
-     procedure, public :: initNcDataset
      procedure, public :: close
 
   end type NcDataset
@@ -156,8 +158,6 @@ module mo_netcdf
 
    contains
 
-     procedure, public :: initNcDimension
-     
      procedure, public :: getParent => getDimensionParent
      procedure, public :: getName => getDimensionName
      procedure, public :: getLength => getDimensionLength
@@ -178,7 +178,6 @@ module mo_netcdf
 
    contains
 
-     procedure, public  :: initNcVariable
 
      procedure, public  :: getParent => getVariableParent
      procedure, public  :: getName => getVariableName
@@ -373,80 +372,48 @@ module mo_netcdf
 
 contains
 
-  subroutine initNcVariable(self, id, parent)
-    class(NcVariable), intent(inout) :: self
-    integer(i32)      , intent(in)    :: id
-    type(NcGroup)    , intent(in)      :: parent
-
-    self%id     = id
-    self%parent = parent
-  end subroutine initNcVariable
-
-  subroutine initNcDimension(self, id, parent)
-    class(NcDimension), intent(inout) :: self
-    integer(i32)       , intent(in)    :: id
-    type(NcGroup)   , intent(in)    :: parent
-
-    self%id     = id
-    self%parent = parent
-  end subroutine initNcDimension
-
-  subroutine initNcDataset(self, fname, mode)
-    class(NcDataset), intent(inout) :: self
-    character(*)    , intent(in)    :: fname
-    character(1)    , intent(in)    :: mode
+  type(NcDataset) function newNcDataset(fname, mode)
+    character(*), intent(in) :: fname
+    character(1), intent(in) :: mode
     integer(i32)                    :: status
-    character(len=255)              :: gname
 
     select case(mode)
     case("w")
-       status = nf90_create(trim(fname), NF90_NETCDF4, self%id)
+       status = nf90_create(trim(fname), NF90_NETCDF4, newNcDataset%id)
     case("r")
-       status = nf90_open(trim(fname), NF90_NOWRITE, self%id)
+       status = nf90_open(trim(fname), NF90_NOWRITE, newNcDataset%id)
     case("a")
-       status = nf90_open(trim(fname), NF90_WRITE, self%id)
+       status = nf90_open(trim(fname), NF90_WRITE, newNcDataset%id)
     case default
        write(*,*) "Mode argument must be in 'w','r','a' ! "
        stop 1
     end select
     call check(status,"Failed to open file: " // fname)
 
-    self%fname = fname
-    self%mode  = mode
-  end subroutine initNcDataset
-
-  subroutine initNcGroup(self, id)
-    class(NcGroup), intent(inout) :: self
-    integer(i32)   , intent(in)    :: id
-    
-    self%id = id
-  end subroutine initNcGroup
+    newNcDataset%fname = fname
+    newNcDataset%mode  = mode
+  end function newNcDataset
 
   type(NcVariable) function newNcVariable(id, parent)
-    integer(i32)  , intent(in) :: id
+    integer(i32) , intent(in) :: id
     type(NcGroup), intent(in) :: parent
 
-    call newNcVariable%initNcVariable(id, parent)
+    newNcVariable%id     = id
+    newNcVariable%parent = parent
   end function newNcVariable
 
   type(NcDimension) function newNcDimension(id, parent)
-    integer(i32)    , intent(in) :: id
+    integer(i32) , intent(in) :: id
     type(NcGroup), intent(in) :: parent
 
-    call newNcDimension%initNcDimension(id, parent)
+    newNcDimension%id     = id
+    newNcDimension%parent = parent
   end function newNcDimension
-
-  type(NcDataset) function newNcDataset(fname, mode)
-    character(*), intent(in) :: fname
-    character(1), intent(in) :: mode
-
-    call newNcDataset%initNcDataset(fname,mode)
-  end function newNcDataset
 
   type(NcGroup) function newNcGroup(id)
     integer(i32)    , intent(in) :: id
 
-    call newNcGroup%initNcGroup(id)
+    newNcGroup%id = id
   end function newNcGroup
 
   subroutine close(self)
