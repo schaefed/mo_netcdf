@@ -162,18 +162,11 @@ call nc%close()
 The current implementation provides a subset of the NetCDF Fortran 90 interface as 
 described in the [User's Guide](http://www.unidata.ucar.edu/software/netcdf//old_docs/docs_4_1_1/netcdf-f90.pdf).
 Some of the current restrictions:
-  - The netcdf library version is not accessible (```nf90_inq_libvers```)
-  - New files are always created in ```NF90_NETCDF4``` mode
-  - File syncing (```nf90_sync```)
   - Dataset fill mode settings (```nf90_set_fill```)
-  - Accessing group parents (```nf90_inq_grp_parent```)
   - Full group names (```nf90_inq_grpname_full```)
-  - Dimension renaming (```nf90_rename_dim```)
   - Variables are limited to 5 dimensions
-  - Variable renaming (```nf90_rename_var```)
   - Accessing variable settings (e.g. ```nf90_inq_var_chunking```, ```nf90_inq_var_fill```, ```nf90_inq_var_deflate```)
   - User defined data types
-  - Attribute renaming (```nf90_rename_att```)
   - Attributes deletion (```nf90_del_att```)
   - Attributes of array types
   

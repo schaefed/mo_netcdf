@@ -29,11 +29,12 @@ module mo_netcdf
        nf90_inquire, nf90_inq_dimid, nf90_inquire_dimension,               &
        nf90_inq_varid, nf90_inq_varids, nf90_inquire_variable, nf90_inquire_attribute,     &
        nf90_inq_ncid, nf90_inq_grp_parent, nf90_inq_grpname, nf90_def_grp, &
-       nf90_rename_dim, nf90_rename_var, nf90_rename_att,                  &
+       nf90_rename_dim, nf90_rename_var, nf90_rename_att, nf90_sync,       &
        NF90_OPEN, NF90_NETCDF4, NF90_CREATE, NF90_WRITE, NF90_NOWRITE,     &
        NF90_BYTE, NF90_SHORT, NF90_INT, NF90_FLOAT, NF90_DOUBLE,           &
        NF90_FILL_BYTE, NF90_FILL_SHORT, NF90_FILL_INT, NF90_FILL_FLOAT , NF90_FILL_DOUBLE, &
-       NF90_NOERR, NF90_UNLIMITED, NF90_GLOBAL
+       NF90_NOERR, NF90_UNLIMITED, NF90_GLOBAL, NF90_SHARE, NF90_HDF5, &
+       NF90_64BIT_OFFSET, NF90_CLASSIC_MODEL
 
 
   implicit none
@@ -145,6 +146,7 @@ module mo_netcdf
 
    contains
 
+     procedure, public :: sync
      procedure, public :: close
 
   end type NcDataset
@@ -377,16 +379,16 @@ module mo_netcdf
 
 contains
 
-  function newNcDataset(fname, mode)
-    character(*), intent(in) :: fname
-    character(1), intent(in) :: mode
-    integer(i32)             :: status
-    type(NcDataset)          :: newNcDataset
+  function newNcDataset(fname, fmode, cmode)
+    character(*), intent(in)              :: fname
+    character(1), intent(in)              :: fmode
+    character(*), intent(inout), optional :: cmode
+    integer(i32)                          :: status
+    type(NcDataset)                       :: newNcDataset
     
-
-    select case(mode)
+    select case(fmode)
     case("w")
-       status = nf90_create(trim(fname), NF90_NETCDF4, newNcDataset%id)
+       status = nf90_create(trim(fname), getCreationMode(cmode), newNcDataset%id)
     case("r")
        status = nf90_open(trim(fname), NF90_NOWRITE, newNcDataset%id)
     case("a")
@@ -398,7 +400,7 @@ contains
     call check(status,"Failed to open file: " // fname)
 
     newNcDataset%fname = fname
-    newNcDataset%mode  = mode
+    newNcDataset%mode  = fmode
   end function newNcDataset
 
   function newNcVariable(id, parent)
@@ -425,6 +427,12 @@ contains
 
     newNcGroup%id = id
   end function newNcGroup
+
+  subroutine sync(self)
+    class(NcDataset) :: self
+
+    call check(nf90_sync(self%id), "Failed to sync file: "//self%fname)
+  end subroutine sync
 
   subroutine close(self)
     class(NcDataset) :: self
@@ -1860,6 +1868,35 @@ contains
        stop 1
     end select
   end function getDtypeFromInteger
+
+  function getCreationMode(cmode)
+    character(*), intent(in), optional :: cmode
+    integer(i32)                       :: getCreationMode
+    character(256)                     :: mode
+
+    if (.not. (present(cmode))) then
+       mode = "NETCDF4"
+    else
+       mode = cmode
+    end if
+
+    select case(trim(mode))
+    case ("NETCDF4")
+       getCreationMode = NF90_NETCDF4
+    case ("SHARE")
+       getCreationMode = NF90_SHARE
+    case ("CLASSIC")
+       getCreationMode = NF90_CLASSIC_MODEL
+    case ("HDF5")
+       getCreationMode = NF90_HDF5
+    case ("64BIT_OFFSET")
+       getCreationMode = NF90_64BIT_OFFSET
+    case default
+       print*, "Creation mode not understood: " // trim(mode)
+       stop 1
+    end select
+       
+  end function getCreationMode
 
   subroutine check(status, msg)
     integer(i32) , intent(in) :: status
