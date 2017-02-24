@@ -38,8 +38,15 @@ module mo_netcdf
   implicit none
 
   ! --------------------------------------------------------------------------------------
-
-  type :: NcAttributable
+  type, abstract :: NcBase
+     integer(i32) :: id
+   contains
+     procedure(getNameInterface), deferred   :: getName
+     procedure(getParentInterface), deferred :: getParent
+     ! procedure, private                      :: getParentId
+  end type NcBase
+  
+  type, abstract, extends(NcBase) :: NcAttributable
 
    contains
      procedure, public  :: hasAttribute
@@ -79,8 +86,6 @@ module mo_netcdf
 
   type, extends(NcAttributable) :: NcGroup
 
-     integer(kind=i32) :: id
-     
   contains
      procedure, public  :: initNcGroup
 
@@ -145,9 +150,8 @@ module mo_netcdf
 
 ! --------------------------------------------------------------------------------------
 
-  type :: NcDimension
+  type, extends(NcBase) :: NcDimension
 
-     integer(kind=i32) :: id
      type(NcGroup)     :: parent  !> The dimension's parent
 
    contains
@@ -166,15 +170,10 @@ module mo_netcdf
      procedure newNcDimension
   end interface NcDimension
 
-  interface operator (==)
-     procedure equalNcDimensions
-  end interface operator (==)
-
 ! --------------------------------------------------------------------------------------
 
   type, extends(NcAttributable) :: NcVariable
 
-     integer(kind=i32)  :: id
      type(NcGroup)      :: parent   !> The variables's parent
 
    contains
@@ -352,6 +351,26 @@ module mo_netcdf
     procedure newNcVariable
   end interface NcVariable
   ! --------------------------------------------------------------------------------------
+
+  ! abstract interfaces
+  interface
+     function getNameInterface(self)
+       import NcBase
+       class(NcBase), intent(in) :: self
+       character(len=256)        :: getNameInterface
+     end function getNameInterface
+
+     function getParentInterface(self)
+       import NcBase, NcGroup
+       class(NcBase), intent(in) :: self
+       type(NcGroup)             :: getParentInterface
+     end function getParentInterface
+  end interface
+
+  interface operator (==)
+     procedure equalNcBases
+  end interface operator (==)
+
 contains
 
   subroutine initNcVariable(self, id, parent)
@@ -376,7 +395,7 @@ contains
     class(NcDataset), intent(inout) :: self
     character(*)    , intent(in)    :: fname
     character(1)    , intent(in)    :: mode
-    integer(i32)                     :: status
+    integer(i32)                    :: status
     character(len=255)              :: gname
 
     select case(mode)
@@ -444,6 +463,15 @@ contains
     call check(nf90_def_grp(self%id, name, id), "Failed to create new group: " // name)
     setGroup = NcGroup(id)
   end function setGroup
+
+  ! function getParentId(self)
+  !   class(NcBase), intent(in) :: self
+  !   ! class(NcBase), pointer    :: tmp
+  !   integer(i32)              :: getParentId
+
+  !   ! tmp => self%getParent()
+  !   getParentId = self%getParent()%id
+  ! end function getParentId
 
   function getGroupParent(self)
     class(NcGroup), intent(in) :: self
@@ -550,11 +578,12 @@ contains
     getUnlimitedDimension = self%getDimension(dimid)
   end function getUnlimitedDimension
 
-  logical function equalNcDimensions(dim1, dim2)
-    type(NcDimension), intent(in) :: dim1, dim2
-
-    equalNcDimensions = (dim1%id .eq. dim2%id)
-  end function equalNcDimensions
+  function equalNcBases(left, right)
+    class(NcBase), intent(in) :: left, right
+    logical                   :: equalNcBases
+    
+    equalNcBases = (left%id .eq. right%id)
+  end function equalNcBases
 
   function isUnlimitedDimension(self)
     class(NcDimension), intent(in) :: self
