@@ -93,6 +93,7 @@ module mo_netcdf
      procedure, private :: getDimensionByName
      procedure, private :: getDimensionById
 
+     procedure, public  :: getParent => getGroupParent
      procedure, public  :: getName => getGroupName
      procedure, public  :: getGroup => getGroupByName
      procedure, public  :: getVariable => getVariableByName
@@ -146,13 +147,14 @@ module mo_netcdf
 
   type :: NcDimension
 
-     integer(kind=i32)   :: id
-     type(NcGroup) ::  parent  !> The dimension's parent, should be a function
+     integer(kind=i32) :: id
+     type(NcGroup)     :: parent  !> The dimension's parent
 
    contains
 
      procedure, public :: initNcDimension
      
+     procedure, public :: getParent => getDimensionParent
      procedure, public :: getName => getDimensionName
      procedure, public :: getLength => getDimensionLength
 
@@ -172,13 +174,14 @@ module mo_netcdf
 
   type, extends(NcAttributable) :: NcVariable
 
-     integer(kind=i32)   :: id
+     integer(kind=i32)  :: id
      type(NcGroup)      :: parent   !> The variables's parent
 
    contains
 
      procedure, public  :: initNcVariable
 
+     procedure, public  :: getParent => getVariableParent
      procedure, public  :: getName => getVariableName
      
      procedure, private :: setDataScalarI8
@@ -400,13 +403,6 @@ contains
     self%id = id
   end subroutine initNcGroup
 
-  function getGroupName(self)
-    class(NcGroup), intent(in) :: self
-    character(256)             :: getGroupName
-
-    call check(nf90_inq_grpname(self%id, getGroupName), "Failed to inquire group name")
-  end function getGroupName
-
   type(NcVariable) function newNcVariable(id, parent)
     integer(i32)  , intent(in) :: id
     type(NcGroup), intent(in) :: parent
@@ -440,7 +436,6 @@ contains
     call check(nf90_close(self%id), "Failed to close file: "//self%fname)
   end subroutine close
 
-
   type(NcGroup) function setGroup(self, name)
     class(NcGroup), intent(inout) :: self
     character(*)  , intent(in)    :: name
@@ -450,16 +445,46 @@ contains
     setGroup = NcGroup(id)
   end function setGroup
 
+  function getGroupParent(self)
+    class(NcGroup), intent(in) :: self
+    integer(i32)               :: id
+    type(NcGroup)              :: getGroupParent
+
+    call check(nf90_inq_grp_parent(self%id, id), "Failed to get parent group of: " // self%getName())
+    getGroupParent = NcGroup(id)
+  end function getGroupParent
+
+  function getGroupName(self)
+    class(NcGroup), intent(in) :: self
+    character(256)             :: getGroupName
+
+    call check(nf90_inq_grpname(self%id, getGroupName), "Failed to inquire group name")
+  end function getGroupName
 
   function getNoVariables(self)
     class(NcGroup), intent(in) :: self
-    integer(i32)                  :: getNoVariables
+    integer(i32)               :: getNoVariables
 
     call check(nf90_inquire(self%id, nvariables=getNoVariables), "Failed inquire number of variables")
   end function getNoVariables
 
+  function getDimensionParent(self)
+    class(NcDimension), intent(in) :: self
+    type(NcGroup)                  :: getDimensionParent
+
+    getDimensionParent = self%parent
+  end function getDimensionParent
+
+  function getVariableParent(self)
+    class(NcVariable), intent(in) :: self
+    type(NcGroup)                  :: getVariableParent
+
+    getVariableParent = self%parent
+  end function getVariableParent
+
+
   function getVariableIds(self)
-    class(NcGroup), intent(in)           :: self
+    class(NcGroup), intent(in)              :: self
     integer(i32), dimension(:), allocatable :: getVariableIds
     integer(i32)                            :: tmp
     
@@ -470,8 +495,8 @@ contains
   function getVariables(self)
     class(NcGroup), intent(in)                  :: self
     type(NcVariable), dimension(:), allocatable :: getVariables
-    integer(i32), dimension(:), allocatable      :: varids
-    integer(i32)                                 :: i, nvars
+    integer(i32), dimension(:), allocatable     :: varids
+    integer(i32)                                :: i, nvars
 
     nvars = self%getNoVariables()
     allocate(getVariables(nvars), varids(nvars))
