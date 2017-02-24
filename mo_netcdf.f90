@@ -29,6 +29,7 @@ module mo_netcdf
        nf90_inquire, nf90_inq_dimid, nf90_inquire_dimension,               &
        nf90_inq_varid, nf90_inq_varids, nf90_inquire_variable, nf90_inquire_attribute,     &
        nf90_inq_ncid, nf90_inq_grp_parent, nf90_inq_grpname, nf90_def_grp, &
+       nf90_rename_dim, nf90_rename_var, nf90_rename_att,                  &
        NF90_OPEN, NF90_NETCDF4, NF90_CREATE, NF90_WRITE, NF90_NOWRITE,     &
        NF90_BYTE, NF90_SHORT, NF90_INT, NF90_FLOAT, NF90_DOUBLE,           &
        NF90_FILL_BYTE, NF90_FILL_SHORT, NF90_FILL_INT, NF90_FILL_FLOAT , NF90_FILL_DOUBLE, &
@@ -54,7 +55,9 @@ module mo_netcdf
    contains
 
      procedure, public  :: hasAttribute
+     procedure, public  :: renameAttribute
      
+     procedure, private :: getAttributableIds
      procedure, private :: setAttributeChar
      procedure, private :: setAttributeI8
      procedure, private :: setAttributeI16
@@ -158,6 +161,7 @@ module mo_netcdf
 
    contains
 
+     procedure, public :: renameDimension
      procedure, public :: getParent => getDimensionParent
      procedure, public :: getName => getDimensionName
      procedure, public :: getLength => getDimensionLength
@@ -179,6 +183,7 @@ module mo_netcdf
    contains
 
 
+     procedure, public  :: renameVariable
      procedure, public  :: getParent => getVariableParent
      procedure, public  :: getName => getVariableName
      
@@ -473,7 +478,6 @@ contains
 
     getVariableParent = self%parent
   end function getVariableParent
-
 
   function getVariableIds(self)
     class(NcGroup), intent(in)              :: self
@@ -814,213 +818,191 @@ contains
 
   subroutine setAttributeChar(self, name, data)
     class(NcAttributable), intent(in) :: self
-    character(*)    , intent(in) :: name
-    character(*)    , intent(in) :: data
+    character(*)         , intent(in) :: name
+    character(*)         , intent(in) :: data
+    integer(i32)                      :: ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_put_att(self%id, NF90_GLOBAL, name, data), &
-         "Failed to write attribute: " // name )
-    class is (NcVariable)
-        call check(nf90_put_att(self%parent%id, self%id, name, data), &
-         "Failed to write attribute: " // name )
-    end select
+    ids = self%getAttributableIds()
+    call check(nf90_put_att(ids(1), ids(2), name, data), &
+         "Failed to write attribute: " // name)
+
   end subroutine setAttributeChar
 
   subroutine setAttributeI8(self, name, data)
     class(NcAttributable), intent(in) :: self
-    character(*)    , intent(in) :: name
-    integer(i8)     , intent(in) :: data
+    character(*)         , intent(in) :: name
+    integer(i8)          , intent(in) :: data
+    integer(i32)                      :: ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
-         "Failed to write attribute: " // name )
-    class is (NcVariable)
-        call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-    end select
+    ids = self%getAttributableIds()
+    call check(nf90_put_att(ids(1), ids(2), name, data), &
+         "Failed to write attribute: " // name)
+
   end subroutine setAttributeI8
 
   subroutine setAttributeI16(self, name, data)
     class(NcAttributable), intent(in) :: self
-    character(*)    , intent(in) :: name
-    integer(i16)     , intent(in) :: data
+    character(*)         , intent(in) :: name
+    integer(i16)         , intent(in) :: data
+    integer(i32)                      :: ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
-         "Failed to write attribute: " // name )
-    class is (NcVariable)
-        call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-    end select
+    ids = self%getAttributableIds()
+    call check(nf90_put_att(ids(1), ids(2), name, data), &
+         "Failed to write attribute: " // name)
+
   end subroutine setAttributeI16
 
   subroutine setAttributeI32(self, name, data)
     class(NcAttributable), intent(in) :: self
-    character(*)    , intent(in) :: name
-    integer(i32)     , intent(in) :: data
+    character(*)         , intent(in) :: name
+    integer(i32)         , intent(in) :: data
+    integer(i32)                      :: ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
-         "Failed to write attribute: " // name )
-    class is (NcVariable)
-        call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-    end select
+    ids = self%getAttributableIds()
+    call check(nf90_put_att(ids(1), ids(2), name, data), &
+         "Failed to write attribute: " // name)
+
   end subroutine setAttributeI32
 
   subroutine setAttributeF32(self, name, data)
     class(NcAttributable), intent(in) :: self
-    character(*)    , intent(in) :: name
-    real(f32)        , intent(in) :: data
+    character(*)         , intent(in) :: name
+    real(f32)            , intent(in) :: data
+    integer(i32)                      :: ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
-         "Failed to write attribute: " // name )
-    class is (NcVariable)
-        call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-    end select
+    ids = self%getAttributableIds()
+    call check(nf90_put_att(ids(1), ids(2), name, data), &
+         "Failed to write attribute: " // name)
+
   end subroutine setAttributeF32
 
   subroutine setAttributeF64(self, name, data)
     class(NcAttributable), intent(in) :: self
-    character(*)    , intent(in) :: name
-    real(f64)        , intent(in) :: data
+    character(*)         , intent(in) :: name
+    real(f64)            , intent(in) :: data
+    integer(i32)                      :: ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_put_att(self%id,NF90_GLOBAL,name,data), &
-         "Failed to write attribute: " // name )
-    class is (NcVariable)
-        call check(nf90_put_att(self%parent%id,self%id,name,data), &
-         "Failed to write attribute: " // name )
-    end select
+    ids = self%getAttributableIds()
+    call check(nf90_put_att(ids(1), ids(2), name, data), &
+         "Failed to write attribute: " // name)
+
   end subroutine setAttributeF64
 
   subroutine getAttributeChar(self, name, avalue)
     class(NcAttributable), intent(in)  :: self
-    character(*)    , intent(in)  :: name
-    character(*)    , intent(out) :: avalue
-    integer(i32)                   :: length
+    character(*)         , intent(in)  :: name
+    character(*)         , intent(out) :: avalue
+    integer(i32)                       :: length, ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+    ids = self%getAttributableIds()
+    call check(nf90_inquire_attribute(ids(1), ids(2), name, len=length),&
+         "Could not inquire attribute " // name)
+    call check(nf90_get_att(ids(1), ids(2), name, avalue), &
          "Could not read attribute "//name)
-    class is (NcVariable)
-        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-    end select
   end subroutine getAttributeChar
 
   subroutine getAttributeI8(self, name, avalue)
-    class(NcAttributable), intent(in)  :: self
-    character(*)    , intent(in)  :: name
-    integer(i8)     , intent(out) :: avalue
-    integer(i32)                   :: length
+    class(NcAttributable) , intent(in)  :: self
+    character(*)          , intent(in)  :: name
+    integer(i8)           , intent(out) :: avalue
+    integer(i32)                        :: length, ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+    ids = self%getAttributableIds()
+    call check(nf90_inquire_attribute(ids(1), ids(2), name, len=length),&
+         "Could not inquire attribute " // name)
+    call check(nf90_get_att(ids(1), ids(2), name, avalue), &
          "Could not read attribute "//name)
-    class is (NcVariable)
-        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-    end select
+
   end subroutine getAttributeI8
 
   subroutine getAttributeI16(self, name, avalue)
-    class(NcAttributable), intent(in)  :: self
-    character(*)    , intent(in)  :: name
-    integer(i16)     , intent(out) :: avalue
-    integer(i32)                   :: length
+    class(NcAttributable) , intent(in)  :: self
+    character(*)          , intent(in)  :: name
+    integer(i16)          , intent(out) :: avalue
+    integer(i32)                        :: length, ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+    ids = self%getAttributableIds()
+    call check(nf90_inquire_attribute(ids(1), ids(2), name, len=length),&
+         "Could not inquire attribute " // name)
+    call check(nf90_get_att(ids(1), ids(2), name, avalue), &
          "Could not read attribute "//name)
-    class is (NcVariable)
-        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-    end select
+
   end subroutine getAttributeI16
 
   subroutine getAttributeI32(self, name, avalue)
-    class(NcAttributable), intent(in)  :: self
-    character(*)    , intent(in)  :: name
-    integer(i32)     , intent(out) :: avalue
-    integer(i32)                   :: length
+    class(NcAttributable) , intent(in)  :: self
+    character(*)          , intent(in)  :: name
+    integer(i32)          , intent(out) :: avalue
+    integer(i32)                        :: length, ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+    ids = self%getAttributableIds()
+    call check(nf90_inquire_attribute(ids(1), ids(2), name, len=length),&
+         "Could not inquire attribute " // name)
+    call check(nf90_get_att(ids(1), ids(2), name, avalue), &
          "Could not read attribute "//name)
-    class is (NcVariable)
-        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-    end select
+
   end subroutine getAttributeI32
 
   subroutine getAttributeF32(self, name, avalue)
-    class(NcAttributable), intent(in)  :: self
-    character(*)    , intent(in)  :: name
-    real(f32)        , intent(out) :: avalue
-    integer(i32)                   :: length
+    class(NcAttributable) , intent(in)  :: self
+    character(*)          , intent(in)  :: name
+    real(f32)             , intent(out) :: avalue
+    integer(i32)                        :: length, ids(2)
 
-    select type (self)
-    class is (NcGroup)
-        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
+    ids = self%getAttributableIds()
+    call check(nf90_inquire_attribute(ids(1), ids(2), name, len=length),&
+         "Could not inquire attribute " // name)
+    call check(nf90_get_att(ids(1), ids(2), name, avalue), &
          "Could not read attribute "//name)
-    class is (NcVariable)
-        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
-    end select
+
   end subroutine getAttributeF32
 
   subroutine getAttributeF64(self, name, avalue)
-    class(NcAttributable), intent(in)  :: self
-    character(*)    , intent(in)  :: name
-    real(f64)        , intent(out) :: avalue
-    integer(i32)                   :: length
+    class(NcAttributable) , intent(in)  :: self
+    character(*)          , intent(in)  :: name
+    real(f64)             , intent(out) :: avalue
+    integer(i32)                        :: length, ids(2)
 
-    select type (self)
+    ids = self%getAttributableIds()
+    call check(nf90_inquire_attribute(ids(1), ids(2), name, len=length),&
+         "Could not inquire attribute " // name)
+    call check(nf90_get_att(ids(1), ids(2), name, avalue), &
+         "Could not read attribute "//name)
+
+ end subroutine getAttributeF64
+
+  function getAttributableIds(self)
+    class(NcAttributable), intent(in) :: self
+    integer(i32)                      :: getAttributableIds(2)
+    select type(self)
     class is (NcGroup)
-        call check(nf90_inquire_attribute(self%id,NF90_GLOBAL,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%id,NF90_GLOBAL,name,avalue), &
-         "Could not read attribute "//name)
+       getAttributableIds(1) = self%id
+       getAttributableIds(2) = NF90_GLOBAL
     class is (NcVariable)
-        call check(nf90_inquire_attribute(self%parent%id,self%id,name,len=length),&
-         "Could not inquire attribute "//name)
-        call check(nf90_get_att(self%parent%id,self%id,name,avalue), &
-         "Could not read attribute "//name)
+       getAttributableIds(1) = self%parent%id
+       getAttributableIds(2) = self%id
     end select
-  end subroutine getAttributeF64
+  end function getAttributableIds
+
+  subroutine renameAttribute(self, oldname, newname)
+    class(NcAttributable), intent(inout) :: self
+    character(len=*), intent(in)         :: oldname, newname
+    integer(i32)                         :: ids(2)
+    ids = self%getAttributableIds()
+    call check(nf90_rename_att(ids(1), ids(2), oldname, newname), "Failed to rename attribute: " // oldname)
+  end subroutine renameAttribute
+
+  subroutine renameVariable(self, name)
+    class(NcVariable), intent(inout) :: self
+    character(len=*),  intent(in)    :: name
+    call check(nf90_rename_var(self%parent%id, self%id, name), "Failed to rename variable: " // self%getName())
+  end subroutine renameVariable
+
+  subroutine renameDimension(self, name)
+    class(NcDimension), intent(inout) :: self
+    character(len=*),  intent(in)     :: name
+    call check(nf90_rename_dim(self%parent%id, self%id, name), "Failed to rename dimension: " // self%getName())
+  end subroutine renameDimension
 
   subroutine setVariableFillValueI8(self, fvalue)
     class(NcVariable), intent(inout)  :: self
