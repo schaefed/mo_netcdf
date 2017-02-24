@@ -93,7 +93,7 @@ module mo_netcdf
   contains
 
      ! getter
-     procedure, public  :: getVariableIds
+     procedure, private :: getVariableIds
      procedure, public  :: getVariables
      procedure, public  :: getUnlimitedDimension
      procedure, public  :: getNoVariables
@@ -372,10 +372,12 @@ module mo_netcdf
 
 contains
 
-  type(NcDataset) function newNcDataset(fname, mode)
+  function newNcDataset(fname, mode)
     character(*), intent(in) :: fname
     character(1), intent(in) :: mode
-    integer(i32)                    :: status
+    integer(i32)             :: status
+    type(NcDataset)          :: newNcDataset
+    
 
     select case(mode)
     case("w")
@@ -394,24 +396,27 @@ contains
     newNcDataset%mode  = mode
   end function newNcDataset
 
-  type(NcVariable) function newNcVariable(id, parent)
+  function newNcVariable(id, parent)
     integer(i32) , intent(in) :: id
     type(NcGroup), intent(in) :: parent
+    type(NcVariable)          :: newNcVariable
 
     newNcVariable%id     = id
     newNcVariable%parent = parent
   end function newNcVariable
 
-  type(NcDimension) function newNcDimension(id, parent)
+  function newNcDimension(id, parent)
     integer(i32) , intent(in) :: id
     type(NcGroup), intent(in) :: parent
+    type(NcDimension)         :: newNcDimension   
 
     newNcDimension%id     = id
     newNcDimension%parent = parent
   end function newNcDimension
 
-  type(NcGroup) function newNcGroup(id)
+  function newNcGroup(id)
     integer(i32)    , intent(in) :: id
+    type(NcGroup)                :: newNcGroup 
 
     newNcGroup%id = id
   end function newNcGroup
@@ -422,23 +427,15 @@ contains
     call check(nf90_close(self%id), "Failed to close file: "//self%fname)
   end subroutine close
 
-  type(NcGroup) function setGroup(self, name)
+  function setGroup(self, name)
     class(NcGroup), intent(inout) :: self
     character(*)  , intent(in)    :: name
-    integer(i32)                   :: id
+    integer(i32)                  :: id
+    type(NcGroup)                 :: setGroup
 
     call check(nf90_def_grp(self%id, name, id), "Failed to create new group: " // name)
     setGroup = NcGroup(id)
   end function setGroup
-
-  ! function getParentId(self)
-  !   class(NcBase), intent(in) :: self
-  !   ! class(NcBase), pointer    :: tmp
-  !   integer(i32)              :: getParentId
-
-  !   ! tmp => self%getParent()
-  !   getParentId = self%getParent()%id
-  ! end function getParentId
 
   function getGroupParent(self)
     class(NcGroup), intent(in) :: self
