@@ -22,7 +22,8 @@ module mo_netcdf
   ! -------
   ! GNU Lesser General Public License http://www.gnu.org/licenses/
 
-  use mo_kind,         only: i8, i16, i32, f32, f64
+  use, intrinsic :: iso_c_binding, only: c_short, c_int, c_long_long, c_float, c_double
+       
   use netcdf,          only: &
        nf90_open, nf90_close, nf90_strerror, nf90_def_dim, nf90_def_var,   &
        nf90_put_var, nf90_get_var, nf90_put_att, nf90_get_att,             &
@@ -40,6 +41,14 @@ module mo_netcdf
   implicit none
 
   ! --------------------------------------------------------------------------------------
+  integer, parameter :: i8  = SELECTED_INT_KIND(2)
+  integer, parameter :: i16 = c_short
+  integer, parameter :: i32 = c_int
+  integer, parameter :: i64 = c_long_long
+  integer, parameter :: f32 = c_float
+  integer, parameter :: f64 = c_double
+
+
   type, abstract :: NcBase
 
      integer(i32) :: id
