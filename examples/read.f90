@@ -1,15 +1,14 @@
 program example_read
 
-  use mo_kind, only: i32
   use mo_netcdf, only: NcDataset, NcDimension, NcVariable, NcGroup
 
   type(NcDataset)   :: nc
   type(NcVariable)  :: var
   type(NcGroup)     :: grp
   
-  integer(i32), allocatable :: data(:,:,:)
-  integer(i32)              :: att_val
-  character(len=80)         :: author1, author2
+  integer, allocatable :: data(:,:,:)
+  integer              :: att_val
+  character(len=80)    :: author1, author2
   
   ! open a dataset in read-only mode
   nc = NcDataset("test.nc", "r")

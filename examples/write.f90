@@ -1,6 +1,5 @@
 program example_write
 
-  use mo_kind  , only : i32
   use mo_netcdf, only: NcDataset, NcDimension, NcVariable, NcGroup
 
   implicit none
@@ -11,8 +10,8 @@ program example_write
   type(NcGroup)     :: grp
 
   ! some data
-  integer(i32), parameter :: nx=10, ny=20, ntime=8
-  integer(i32)            :: data(nx, ny, ntime), i
+  integer, parameter :: nx=10, ny=20, ntime=8
+  integer            :: data(nx, ny, ntime), i
 
   data = 42
 
