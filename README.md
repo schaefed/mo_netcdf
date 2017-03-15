@@ -48,8 +48,8 @@ grp = nc%setGroup("group")
 ! create dimensions
 ! args:
 !     dimension name 
-!     dimension length (< 0 for an unlimited dimension)
-dim1 = grp%setDimension("time", -1)
+!     dimension length (optional: skip for an unlimited dimension)
+dim1 = grp%setDimension("time")
 dim2 = grp%setDimension("y", ny)
 dim3 = grp%setDimension("x", nx)
 

@@ -130,7 +130,11 @@ module mo_netcdf
 
      ! setter
      procedure, public  :: setGroup
-     procedure, public  :: setDimension
+     procedure, private :: setLimitedDimension
+     procedure, private :: setUnlimitedDimension
+     generic, public    :: setDimension => &
+          setLimitedDimension, &
+          setUnlimitedDimension
      procedure, private :: setVariableWithTypes
      procedure, private :: setVariableWithNames
      procedure, private :: setVariableWithIds
@@ -580,12 +584,22 @@ contains
     end if
   end function isUnlimitedDimension
 
-  function setDimension(self, name, length)
+   
+  function setUnlimitedDimension(self, name)
+    class(NcGroup), intent(in)           :: self
+    character(*)  , intent(in)           :: name
+    type(NcDimension)                    :: setUnlimitedDimension
+    integer(i32)                         :: id, dimlength
+
+    setUnlimitedDimension = self%setLimitedDimension(name, -1)
+  end function setUnlimitedDimension
+ 
+  function setLimitedDimension(self, name, length)
     class(NcGroup), intent(in) :: self
-    character(*)    , intent(in) :: name
-    integer(i32)     , intent(in) :: length
-    type(NcDimension)            :: setDimension
-    integer(i32)                  :: id, dimlength
+    character(*)  , intent(in) :: name
+    integer(i32)  , intent(in) :: length
+    type(NcDimension)          :: setLimitedDimension
+    integer(i32)               :: id, dimlength
 
     if (length .le. 0) then
        dimlength = NF90_UNLIMITED
@@ -596,8 +610,8 @@ contains
     call check(nf90_def_dim(self%id, name, dimlength, id), &
          "Failed to create dimension: " // name)
 
-    setDimension = NcDimension(id,self)
-  end function setDimension
+    setLimitedDimension = NcDimension(id,self)
+  end function setLimitedDimension
 
   function hasVariable(self, name)
     class(NcGroup), intent(in) :: self
