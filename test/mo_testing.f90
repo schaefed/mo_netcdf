@@ -1,5 +1,6 @@
 module mo_testing
 
+  use mo_types
   use mo_string
 
   implicit none
@@ -18,7 +19,7 @@ contains
   end subroutine exitOut
 
   subroutine assertEqualScalarsI32(first, second, msg)
-    integer,     intent(in)           :: first, second
+    integer(i32),     intent(in)           :: first, second
     character(len=*), intent(in), optional :: msg
     type(String) :: tmp
 
