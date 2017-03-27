@@ -280,6 +280,8 @@ module mo_netcdf
 
      procedure, public  :: getDimensions => getVariableDimensions
 
+     procedure, public  :: getRank       => getVariableRank
+
      procedure, public  :: getShape      => getVariableShape
 
      procedure, public  :: getDtype      => getVariableDtype
@@ -789,9 +791,9 @@ contains
 
   function getVariableShape(self)
     class(NcVariable), intent(in)  :: self
-    integer(i32)      , allocatable :: getVariableShape(:)
+    integer(i32)     , allocatable :: getVariableShape(:)
     type(NcDimension), allocatable :: dims(:)
-    integer(i32)                    :: ii, ndims
+    integer(i32)                   :: ii, ndims
 
     ndims = self%getNoDimensions()
     allocate(getVariableShape(ndims), dims(ndims))
@@ -801,6 +803,13 @@ contains
        getVariableShape(ii) = dims(ii)%getLength()
     end do
   end function getVariableShape
+
+  function getVariableRank(self)
+    class(NcVariable), intent(in)  :: self
+    integer(i32)                   :: getVariableRank
+
+    getVariableRank = size(self%getDimensions())
+  end function getVariableRank
 
   function getVariableDtype(self)
     class(NcVariable), intent(in) :: self
@@ -1798,8 +1807,8 @@ contains
 
   subroutine getData5dF64(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f64)         , intent(out), allocatable :: data(:,:,:,:,:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f64)        , intent(out), allocatable :: data(:,:,:,:,:)
     integer(i32)                   , allocatable :: datashape(:)
 
     allocate(datashape(5))
@@ -1810,17 +1819,54 @@ contains
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData5dF64
 
+  subroutine setData2dI32(self, values, start, stop, step)
+    class(NcVariable), intent(in)            :: self
+    integer(i32)     , intent(in)            :: values(:,:)
+    integer(i32)     , intent(in), optional  :: start(:), stop(:), step(:)
+
+    ! call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
+    !      "Failed to write data into variable: " // trim(self%getName()))
+  end subroutine setData2dI32
+
+  function dataAccessShape(self, instart, instop, instep)
+    class(NcVariable), intent(in)           :: self
+    integer(i32),      intent(in), optional :: instart(:), instop(:), instep(:)
+    integer(i32), allocatable               :: dataAccessShape(:)
+
+    ! Needs a test!!
+    ! when working use this for get ReadDataShape as well
+
+    dataAccessShape = self%getShape()
+
+    if (present(instop)) then
+       ! the place to handle negative values
+       dataAccessShape(:size(instop)) = instop
+    end if
+
+    if (present(instart)) then
+       dataAccessShape(:size(instart)) = dataAccessShape(:size(instart)) - instart
+    end if
+
+    if (present(instep)) then
+       dataAccessShape(:size(instep)) = dataAccessShape(:size(instep)) / instep
+    end if
+
+
+
+  end function dataAccessShape
+
   function getReadDataShape(var, datarank, instart, incnt, instride)
     type(NcVariable), intent(in)           :: var
-    integer(i32)     , intent(in)           :: datarank
-    integer(i32)     , intent(in), optional :: instart(:), incnt(:), instride(:)
-    integer(i32)     , allocatable          :: readshape(:)
-    integer(i32)                            :: naxis
-    integer(i32)                            :: getReadDataShape(datarank)
+    integer(i32)    , intent(in)           :: datarank
+    integer(i32)    , intent(in), optional :: instart(:), incnt(:), instride(:)
+    integer(i32)    , allocatable          :: readshape(:)
+    integer(i32)                           :: naxis
+    integer(i32)                           :: getReadDataShape(datarank)
 
     readshape = var%getShape()
     
     if (present(incnt)) then
+       ! this is buggy
        readshape = incnt
     else
        if (present(instart)) then
