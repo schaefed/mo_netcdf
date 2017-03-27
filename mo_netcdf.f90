@@ -1828,32 +1828,30 @@ contains
     !      "Failed to write data into variable: " // trim(self%getName()))
   end subroutine setData2dI32
 
-  function dataAccessShape(self, instart, instop, instep)
+  function getSlicingShape(self, instart, instop, instep)
     class(NcVariable), intent(in)           :: self
     integer(i32),      intent(in), optional :: instart(:), instop(:), instep(:)
-    integer(i32), allocatable               :: dataAccessShape(:)
+    integer(i32), allocatable               :: getSlicingShape(:)
 
     ! Needs a test!!
     ! when working use this for get ReadDataShape as well
 
-    dataAccessShape = self%getShape()
+    getSlicingShape = self%getShape()
 
     if (present(instop)) then
        ! the place to handle negative values
-       dataAccessShape(:size(instop)) = instop
+       getSlicingShape(:size(instop)) = instop
     end if
 
     if (present(instart)) then
-       dataAccessShape(:size(instart)) = dataAccessShape(:size(instart)) - instart
+       getSlicingShape(:size(instart)) = getSlicingShape(:size(instart)) - instart
     end if
 
     if (present(instep)) then
-       dataAccessShape(:size(instep)) = dataAccessShape(:size(instep)) / instep
+       getSlicingShape(:size(instep)) = getSlicingShape(:size(instep)) / instep
     end if
 
-
-
-  end function dataAccessShape
+  end function getSlicingShape
 
   function getReadDataShape(var, datarank, instart, incnt, instride)
     type(NcVariable), intent(in)           :: var

@@ -3,14 +3,6 @@ module mo_string
   use mo_types
 
   implicit none
-
-  integer, parameter :: i8  = SELECTED_INT_KIND(2)
-  integer, parameter :: i16 = c_short
-  integer, parameter :: i32 = c_int
-  integer, parameter :: i64 = c_long_long
-  integer, parameter :: f32 = c_float
-  integer, parameter :: f64 = c_double
-
  
   interface toString
      module procedure toStringI32

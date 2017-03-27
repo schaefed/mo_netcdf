@@ -1,6 +1,8 @@
 program test_write
 
   use mo_netcdf, only: NcDataset, NcVariable
+  use mo_testing
+  use mo_string
   
   type(NcDataset)   :: nc
   type(NcVariable)  :: var
@@ -22,10 +24,7 @@ program test_write
   call var%putData(42, start=[5,5,1])
   call nc%sync()
   call var%getData(val, start=[5,5,1])
-  if (val /= 42) then
-     print*, "setting a single value failed"
-     stop 1
-  end if
+  call assertEqual(val, 42, "Failed to set a scalar value!")
 
   !! set and get the all values for the first row in the third timestep
   !! i.e. (:,1,3)
