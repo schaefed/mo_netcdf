@@ -1,15 +1,16 @@
 program test_write
 
   use mo_netcdf, only: NcDataset, NcVariable
+  use mo_types
   use mo_testing
   use mo_string
   
   type(NcDataset)   :: nc
   type(NcVariable)  :: var
 
-  integer, parameter   :: nx=10, ny=20, ntime=8
-  integer              :: val, x(nx), y(ny), time(ntime), tstep(nx, ny)
-  integer, allocatable :: vals1d(:), vals2d(:,:)
+  integer(i32), parameter   :: nx=10, ny=20, ntime=8
+  integer(i32)              :: val, x(nx), y(ny), time(ntime), tstep(nx, ny)
+  integer(i32), allocatable :: vals1d(:), vals2d(:,:)
 
   nc  = NcDataset("writetest.nc", "w")
 
@@ -32,10 +33,7 @@ program test_write
   call var%putData(x, start=[1,1,3])
   call nc%sync()
   call var%getData(vals1d, start=[1,1,3], cnt=[nx,1,1])
-  if (all(vals1d /= x)) then
-     print*, "setting a 1D array of values failed"
-     stop 1
-  end if
+  call assertEqual(vals1d, x, "Failed to set values of a 1D array")
 
   !! set and get the all values for the third column in the sixth timestep
   !! i.e. (3,:,6)
@@ -43,10 +41,7 @@ program test_write
   call var%putData(y, start=[3,1,6], cnt=[1,ny])
   call nc%sync()
   call var%getData(vals1d, start=[3,1,6], cnt=[1,ny])
-  if (all(vals1d /= y)) then
-     print*, "setting a 1D array of values failed"
-     stop 1
-  end if
+  call assertEqual(vals1d, y, "Failed to set values of a 1D array")
 
   !! set and get the all values for the fourth timestep
   !! i.e. (:,:,4)
@@ -54,21 +49,15 @@ program test_write
   call var%putData(tstep, start=[1,1,4])
   call nc%sync()
   call var%getData(vals2d, start=[1,1,4], cnt=[nx,ny])
-  if (all(vals2d /= tstep)) then
-     print*, "setting a 1D array of values failed"
-     stop 1
-  end if
+  call assertEqual(vals2d, tstep, "Failed to set values of a 2D array")
 
   !! set and get the all values for sixth column, fourth row and every second timestep
-  !! (4,6,1::2)
-  time = 336
-  call var%putData(time, start=[6,4], cnt=[1,1,ntime], stride=[1,1,2] )
-  call nc%sync()
-  call var%getData(vals1d, start=[6,4], cnt=[1,1,ntime], stride=[1,1,2])
-  if (all(vals1d /= time)) then
-     print*, "setting a 1D array of values failed"
-     stop 1
-  end if
+  ! !! (4,6,1::2)
+  ! time = 336
+  ! call var%putData(time, start=[6,4], cnt=[1,1,ntime], stride=[1,1,2] )
+  ! call nc%sync()
+  ! call var%getData(vals3d, start=[6,4], cnt=[1,1,ntime], stride=[1,1,2])
+  ! call assertEqual(vals3d, tstep, "Failed to set values of a 3D array")
   
   call nc%close()
 

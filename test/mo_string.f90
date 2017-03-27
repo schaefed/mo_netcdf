@@ -35,7 +35,11 @@ contains
     character(len=*), intent(in) :: arg
     type(String)                 :: out
 
+    ! if (present(arg)) then
     out%data = arg
+    ! else
+    !    out%data = ""
+    ! end if
   end function newStringChar
 
   function newStringI32(arg) result(out)
@@ -68,7 +72,12 @@ contains
     
     out = self%data
   end function get
-  
+
+  subroutine printString(str)
+    type(String), intent(in) :: str
+
+    print*, str%get()
+  end subroutine printString
 
   function joinStrings(strings, sep) result(out)
     type(String),     intent(in)           :: strings(:)
