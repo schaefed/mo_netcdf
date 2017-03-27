@@ -1,8 +1,8 @@
-program test_write
+program test_putdata
 
   use mo_netcdf, only: NcDataset, NcVariable
   use mo_types
-  use mo_testing
+  use mo_assert
   use mo_string
   use mo_testhelper
   
@@ -67,4 +67,4 @@ program test_write
 
   call nc%close()
 
-end program test_write
+end program test_putdata
