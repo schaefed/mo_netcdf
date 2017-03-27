@@ -7,14 +7,13 @@ module mo_testing
 
   interface assertEqual
      module procedure assertEqualScalarsI32, assertEqual1DI32, assertEqual2DI32, &
-         assertEqual3DI32 
+         assertEqual3DI32
   end interface assertEqual
 
 contains
 
   subroutine exitOut(msg)
     type(string), intent(in) :: msg
-
     call printString(msg)
     stop 1
   end subroutine exitOut
@@ -78,6 +77,20 @@ contains
        call exitOut(String("AssertionError: Not all array values are equal"))
      end if
    end subroutine assertEqual3DI32
+
+   ! subroutine assertEqual3D2DI32(first, second, msg)
+   !  integer(i32), intent(in)               :: first(:,:,:), second(:,:)
+   !  character(len=*), intent(in), optional :: msg
+
+   !  ! if (.not. (all(first == second))) then
+
+   !  !    if (present(msg)) then
+   !  !       call printString(String(msg))
+   !  !    end if
+       
+   !  !    call exitOut(String("AssertionError: Not all array values are equal"))
+   !  !  end if
+   ! end subroutine assertEqual3D2DI32
 
 
 ! subroutine assertEqual1dScalarI32(array, scalar, msg)

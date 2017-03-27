@@ -10,7 +10,7 @@ program test_write
 
   integer(i32), parameter   :: nx=10, ny=20, ntime=8
   integer(i32)              :: val, x(nx), y(ny), time(ntime), tstep(nx, ny)
-  integer(i32), allocatable :: vals1d(:), vals2d(:,:)
+  integer(i32), allocatable :: vals1d(:), vals2d(:,:), vals3d(:,:,:)
 
   nc  = NcDataset("writetest.nc", "w")
 
@@ -51,13 +51,13 @@ program test_write
   call var%getData(vals2d, start=[1,1,4], cnt=[nx,ny])
   call assertEqual(vals2d, tstep, "Failed to set values of a 2D array")
 
-  !! set and get the all values for sixth column, fourth row and every second timestep
-  ! !! (4,6,1::2)
-  ! time = 336
-  ! call var%putData(time, start=[6,4], cnt=[1,1,ntime], stride=[1,1,2] )
-  ! call nc%sync()
-  ! call var%getData(vals3d, start=[6,4], cnt=[1,1,ntime], stride=[1,1,2])
-  ! call assertEqual(vals3d, tstep, "Failed to set values of a 3D array")
+  ! set and get the all values for sixth column, fourth row and every second timestep
+  !! (4,6,1::2)
+  time = 336
+  call var%putData(time, start=[6,4], cnt=[1,1,ntime], stride=[1,1,2] )
+  call nc%sync()
+  call var%getData(vals1d, start=[6,4], cnt=[1,1,ntime], stride=[1,1,2])
+  call assertEqual(vals1d, time, "Failed to set values of a 3D array")
   
   call nc%close()
 
