@@ -58,15 +58,15 @@ program example_write
   !     stride (optional): array of integers specifying the sampling interval of each dimension 
   !     map    (optional): see nf90_put_var 
   ! write the entire variable
-  call var%putData(data)
+  call var%setData(data)
   ! write one value at position (5,5,1) (indexing: x, y, time)
-  call var%putData(21, start=(/5,5,1/))
+  call var%setData(21, start=(/5,5,1/))
   ! write a 2D array into the 3D data array at position (1,1,4)
-  call var%putData(data(:,:,1)/2, start=(/1,1,4/))
+  call var%setData(data(:,:,1)/2, start=(/1,1,4/))
 
   ! dynamically append some data along the time dimension
   do i = ntime+2, ntime+12
-     call var%putData(data(:,:,1)+i, start=(/1,1,i/))
+     call var%setData(data(:,:,1)+i, start=(/1,1,i/))
   end do
 
   ! add a group attribute, attributes can be set to NcDataset, NcGroup and NcVariable
