@@ -193,37 +193,39 @@ module mo_netcdf
      procedure, public  :: renameVariable
      procedure, public  :: getParent => getVariableParent
      procedure, public  :: getName => getVariableName
+     procedure, private :: getSlicingShape
+     procedure, private :: getReadShape
      
-     procedure, private :: putDataScalarI8
-     procedure, private :: putData1dI8
-     procedure, private :: putData2dI8
-     procedure, private :: putData3dI8
-     procedure, private :: putData4dI8
-     procedure, private :: putData5dI8
-     procedure, private :: putDataScalarI16
-     procedure, private :: putData1dI16
-     procedure, private :: putData2dI16
-     procedure, private :: putData3dI16
-     procedure, private :: putData4dI16
-     procedure, private :: putData5dI16
-     procedure, private :: putDataScalarI32
-     procedure, private :: putData1dI32
-     procedure, private :: putData2dI32
-     procedure, private :: putData3dI32
-     procedure, private :: putData4dI32
-     procedure, private :: putData5dI32
-     procedure, private :: putDataScalarF32
-     procedure, private :: putData1dF32
-     procedure, private :: putData2dF32
-     procedure, private :: putData3dF32
-     procedure, private :: putData4dF32
-     procedure, private :: putData5dF32
-     procedure, private :: putDataScalarF64
-     procedure, private :: putData1dF64
-     procedure, private :: putData2dF64
-     procedure, private :: putData3dF64
-     procedure, private :: putData4dF64
-     procedure, private :: putData5dF64
+     procedure, private :: setDataScalarI8
+     procedure, private :: setData1dI8
+     procedure, private :: setData2dI8
+     procedure, private :: setData3dI8
+     procedure, private :: setData4dI8
+     procedure, private :: setData5dI8
+     procedure, private :: setDataScalarI16
+     procedure, private :: setData1dI16
+     procedure, private :: setData2dI16
+     procedure, private :: setData3dI16
+     procedure, private :: setData4dI16
+     procedure, private :: setData5dI16
+     procedure, private :: setDataScalarI32
+     procedure, private :: setData1dI32
+     procedure, private :: setData2dI32
+     procedure, private :: setData3dI32
+     procedure, private :: setData4dI32
+     procedure, private :: setData5dI32
+     procedure, private :: setDataScalarF32
+     procedure, private :: setData1dF32
+     procedure, private :: setData2dF32
+     procedure, private :: setData3dF32
+     procedure, private :: setData4dF32
+     procedure, private :: setData5dF32
+     procedure, private :: setDataScalarF64
+     procedure, private :: setData1dF64
+     procedure, private :: setData2dF64
+     procedure, private :: setData3dF64
+     procedure, private :: setData4dF64
+     procedure, private :: setData5dF64
 
      procedure, private :: getDataScalarI8
      procedure, private :: getData1dI8
@@ -280,37 +282,37 @@ module mo_netcdf
 
      procedure, public  :: isUnlimited   => isUnlimitedVariable
 
-     generic, public :: putData => &
-          putDataScalarI8, &
-          putData1dI8, &
-          putData2dI8, &
-          putData3dI8, &
-          putData4dI8, &
-          putData5dI8, &
-          putDataScalarI16, &
-          putData1dI16, &
-          putData2dI16, &
-          putData3dI16, &
-          putData4dI16, &
-          putData5dI16, &
-          putDataScalarI32, &
-          putData1dI32, &
-          putData2dI32, &
-          putData3dI32, &
-          putData4dI32, &
-          putData5dI32, &
-          putDataScalarF32, &
-          putData1dF32, &
-          putData2dF32, &
-          putData3dF32, &
-          putData4dF32, &
-          putData5dF32, &
-          putDataScalarF64, &
-          putData1dF64, &
-          putData2dF64, &
-          putData3dF64, &
-          putData4dF64, &
-          putData5dF64
+     generic, public :: setData => &
+          setDataScalarI8, &
+          setData1dI8, &
+          setData2dI8, &
+          setData3dI8, &
+          setData4dI8, &
+          setData5dI8, &
+          setDataScalarI16, &
+          setData1dI16, &
+          setData2dI16, &
+          setData3dI16, &
+          setData4dI16, &
+          setData5dI16, &
+          setDataScalarI32, &
+          setData1dI32, &
+          setData2dI32, &
+          setData3dI32, &
+          setData4dI32, &
+          setData5dI32, &
+          setDataScalarF32, &
+          setData1dF32, &
+          setData2dF32, &
+          setData3dF32, &
+          setData4dF32, &
+          setData5dF32, &
+          setDataScalarF64, &
+          setData1dF64, &
+          setData2dF64, &
+          setData3dF64, &
+          setData4dF64, &
+          setData5dF64
 
      generic, public :: getData => &
           getDataScalarI8, &
@@ -1136,281 +1138,281 @@ contains
     end if
   end subroutine getVariableFillValueF64
 
-  subroutine putDataScalarI8(self, values, start)
+  subroutine setDataScalarI8(self, values, start)
     class(NcVariable), intent(in)           :: self
     integer(i8)      , intent(in)           :: values
     integer(i32)      , intent(in), optional :: start(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putDataScalarI8
+  end subroutine setDataScalarI8
 
-  subroutine putData1dI8(self, values, start, cnt, stride, map)
+  subroutine setData1dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i8)      , intent(in)           :: values(:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData1dI8
+  end subroutine setData1dI8
 
-  subroutine putData2dI8(self, values, start, cnt, stride, map)
+  subroutine setData2dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i8)      , intent(in)           :: values(:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData2dI8
+  end subroutine setData2dI8
 
-  subroutine putData3dI8(self, values, start, cnt, stride, map)
+  subroutine setData3dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i8)      , intent(in)           :: values(:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData3dI8
+  end subroutine setData3dI8
 
-  subroutine putData4dI8(self, values, start, cnt, stride, map)
+  subroutine setData4dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i8)      , intent(in)           :: values(:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData4dI8
+  end subroutine setData4dI8
 
-  subroutine putData5dI8(self, values, start, cnt, stride, map)
+  subroutine setData5dI8(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i8)      , intent(in)           :: values(:,:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData5dI8
+  end subroutine setData5dI8
 
-  subroutine putDataScalarI16(self, values, start)
+  subroutine setDataScalarI16(self, values, start)
     class(NcVariable), intent(in)           :: self
     integer(i16)      , intent(in)           :: values
     integer(i32)      , intent(in), optional :: start(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putDataScalarI16
+  end subroutine setDataScalarI16
 
-  subroutine putData1dI16(self, values, start, cnt, stride, map)
+  subroutine setData1dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i16)      , intent(in)           :: values(:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData1dI16
+  end subroutine setData1dI16
 
-  subroutine putData2dI16(self, values, start, cnt, stride, map)
+  subroutine setData2dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i16)      , intent(in)           :: values(:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData2dI16
+  end subroutine setData2dI16
 
-  subroutine putData3dI16(self, values, start, cnt, stride, map)
+  subroutine setData3dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i16)      , intent(in)           :: values(:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData3dI16
+  end subroutine setData3dI16
 
-  subroutine putData4dI16(self, values, start, cnt, stride, map)
+  subroutine setData4dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i16)      , intent(in)           :: values(:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData4dI16
+  end subroutine setData4dI16
 
-  subroutine putData5dI16(self, values, start, cnt, stride, map)
+  subroutine setData5dI16(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i16)      , intent(in)           :: values(:,:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData5dI16
+  end subroutine setData5dI16
 
-  subroutine putDataScalarI32(self, values, start)
+  subroutine setDataScalarI32(self, values, start)
     class(NcVariable), intent(in)           :: self
     integer(i32)      , intent(in)           :: values
     integer(i32)      , intent(in), optional :: start(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putDataScalarI32
+  end subroutine setDataScalarI32
 
-  subroutine putData1dI32(self, values, start, cnt, stride, map)
+  subroutine setData1dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i32)      , intent(in)           :: values(:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData1dI32
+  end subroutine setData1dI32
 
-  subroutine putData2dI32(self, values, start, cnt, stride, map)
+  subroutine setData2dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i32)      , intent(in)           :: values(:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData2dI32
+  end subroutine setData2dI32
 
-  subroutine putData3dI32(self, values, start, cnt, stride, map)
+  subroutine setData3dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i32)      , intent(in)           :: values(:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData3dI32
+  end subroutine setData3dI32
 
-  subroutine putData4dI32(self, values, start, cnt, stride, map)
+  subroutine setData4dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i32)      , intent(in)           :: values(:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData4dI32
+  end subroutine setData4dI32
 
-  subroutine putData5dI32(self, values, start, cnt, stride, map)
+  subroutine setData5dI32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     integer(i32)      , intent(in)           :: values(:,:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData5dI32
+  end subroutine setData5dI32
 
-  subroutine putDataScalarF32(self, values, start)
+  subroutine setDataScalarF32(self, values, start)
     class(NcVariable), intent(in)           :: self
     real(f32)         , intent(in)           :: values
     integer(i32)      , intent(in), optional :: start(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putDataScalarF32
+  end subroutine setDataScalarF32
 
-  subroutine putData1dF32(self, values, start, cnt, stride, map)
+  subroutine setData1dF32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f32)         , intent(in)           :: values(:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData1dF32
+  end subroutine setData1dF32
 
-  subroutine putData2dF32(self, values, start, cnt, stride, map)
+  subroutine setData2dF32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f32)         , intent(in)           :: values(:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData2dF32
+  end subroutine setData2dF32
 
-  subroutine putData3dF32(self, values, start, cnt, stride, map)
+  subroutine setData3dF32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f32)         , intent(in)           :: values(:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData3dF32
+  end subroutine setData3dF32
 
-  subroutine putData4dF32(self, values, start, cnt, stride, map)
+  subroutine setData4dF32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f32)         , intent(in)           :: values(:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData4dF32
+  end subroutine setData4dF32
 
-  subroutine putData5dF32(self, values, start, cnt, stride, map)
+  subroutine setData5dF32(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f32)         , intent(in)           :: values(:,:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData5dF32
+  end subroutine setData5dF32
 
-  subroutine putDataScalarF64(self, values, start)
+  subroutine setDataScalarF64(self, values, start)
     class(NcVariable), intent(in)           :: self
     real(f64)         , intent(in)           :: values
     integer(i32)      , intent(in), optional :: start(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putDataScalarF64
+  end subroutine setDataScalarF64
 
-  subroutine putData1dF64(self, values, start, cnt, stride, map)
+  subroutine setData1dF64(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f64)         , intent(in)           :: values(:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData1dF64
+  end subroutine setData1dF64
 
-  subroutine putData2dF64(self, values, start, cnt, stride, map)
+  subroutine setData2dF64(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f64)         , intent(in)           :: values(:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData2dF64
+  end subroutine setData2dF64
 
-  subroutine putData3dF64(self, values, start, cnt, stride, map)
+  subroutine setData3dF64(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f64)         , intent(in)           :: values(:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData3dF64
+  end subroutine setData3dF64
 
-  subroutine putData4dF64(self, values, start, cnt, stride, map)
+  subroutine setData4dF64(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f64)         , intent(in)           :: values(:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData4dF64
+  end subroutine setData4dF64
 
-  subroutine putData5dF64(self, values, start, cnt, stride, map)
+  subroutine setData5dF64(self, values, start, cnt, stride, map)
     class(NcVariable), intent(in)           :: self
     real(f64)         , intent(in)           :: values(:,:,:,:,:)
     integer(i32)      , intent(in), optional :: start(:), cnt(:), stride(:), map(:)
 
     call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
          "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine putData5dF64
+  end subroutine setData5dF64
 
   subroutine getDataScalarI8(self, data, start, cnt, stride, map)
-    class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i8)      , intent(out)              :: data
-    integer(i8)                                 :: tmp(1)
+    class(NcVariable), intent(in)            :: self
+    integer(i32)     , intent(in) , optional :: start(:), cnt(:), stride(:), map(:)
+    integer(i8)      , intent(out)           :: data
+    integer(i8)                              :: tmp(1)
 
     call check (nf90_get_var(self%parent%id, self%id, tmp, start, cnt, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
@@ -1419,12 +1421,12 @@ contains
 
   subroutine getData1dI8(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
     integer(i8)      , intent(out), allocatable :: data(:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(1))
-    datashape = getReadDataShape(self, 1, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1433,12 +1435,12 @@ contains
 
   subroutine getData2dI8(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
     integer(i8)      , intent(out), allocatable :: data(:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(2))
-    datashape = getReadDataShape(self, 2, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1447,12 +1449,12 @@ contains
 
   subroutine getData3dI8(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
     integer(i8)      , intent(out), allocatable :: data(:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(3))
-    datashape = getReadDataShape(self, 3, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1461,12 +1463,12 @@ contains
 
   subroutine getData4dI8(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
     integer(i8)      , intent(out), allocatable :: data(:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(4))
-    datashape = getReadDataShape(self, 4, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1475,12 +1477,12 @@ contains
 
   subroutine getData5dI8(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
     integer(i8)      , intent(out), allocatable :: data(:,:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(5))
-    datashape = getReadDataShape(self, 5, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1500,12 +1502,12 @@ contains
 
   subroutine getData1dI16(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i16)      , intent(out), allocatable :: data(:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i16)     , intent(out), allocatable :: data(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(1))
-    datashape = getReadDataShape(self, 1, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1514,12 +1516,12 @@ contains
 
   subroutine getData2dI16(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i16)      , intent(out), allocatable :: data(:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i16)     , intent(out), allocatable :: data(:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(2))
-    datashape = getReadDataShape(self, 2, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1528,12 +1530,12 @@ contains
 
   subroutine getData3dI16(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i16)      , intent(out), allocatable :: data(:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i16)     , intent(out), allocatable :: data(:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(3))
-    datashape = getReadDataShape(self, 3, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1542,12 +1544,12 @@ contains
 
   subroutine getData4dI16(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i16)      , intent(out), allocatable :: data(:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i16)     , intent(out), allocatable :: data(:,:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(4))
-    datashape = getReadDataShape(self, 4, start, cnt, stride)
+    slcshape = self%getSlicingShape( start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1556,12 +1558,12 @@ contains
 
   subroutine getData5dI16(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i16)      , intent(out), allocatable :: data(:,:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i16)     , intent(out), allocatable :: data(:,:,:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(5))
-    datashape = getReadDataShape(self, 5, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1570,9 +1572,9 @@ contains
 
   subroutine getDataScalarI32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i32)      , intent(out)              :: data
-    integer(i32)                                 :: tmp(1)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(out)              :: data
+    integer(i32)                                :: tmp(1)
 
     call check (nf90_get_var(self%parent%id, self%id, tmp, start, cnt, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
@@ -1581,12 +1583,12 @@ contains
 
   subroutine getData1dI32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i32)      , intent(out), allocatable :: data(:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(out), allocatable :: data(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
     
-    allocate(datashape(1))
-    datashape = getReadDataShape(self, 1, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
     
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1595,12 +1597,12 @@ contains
 
   subroutine getData2dI32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i32)      , intent(out), allocatable :: data(:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(out), allocatable :: data(:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(2))
-    datashape = getReadDataShape(self, 2, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1609,12 +1611,12 @@ contains
 
   subroutine getData3dI32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i32)      , intent(out), allocatable :: data(:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(out), allocatable :: data(:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(3))
-    datashape = getReadDataShape(self, 3, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1623,12 +1625,12 @@ contains
 
   subroutine getData4dI32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    integer(i32)      , intent(out), allocatable :: data(:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(out), allocatable :: data(:,:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(4))
-    datashape = getReadDataShape(self, 4, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1637,12 +1639,12 @@ contains
 
   subroutine getData5dI32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional   :: start(:), cnt(:), stride(:), map(:)
-    integer(i32)      , intent(out), allocatable :: data(:,:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    integer(i32)     , intent(out), allocatable :: data(:,:,:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(5))
-    datashape = getReadDataShape(self, 5, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1651,9 +1653,9 @@ contains
 
   subroutine getDataScalarF32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)             :: self
-    integer(i32)      , intent(in) , optional  :: start(:), cnt(:), stride(:), map(:)
-    real(f32)         , intent(out)            :: data
-    real(f32)                                  :: tmp(1)
+    integer(i32)     , intent(in) , optional  :: start(:), cnt(:), stride(:), map(:)
+    real(f32)        , intent(out)            :: data
+    real(f32)                                 :: tmp(1)
 
     call check (nf90_get_var(self%parent%id, self%id, tmp, start, cnt, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
@@ -1662,12 +1664,12 @@ contains
 
   subroutine getData1dF32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f32)         , intent(out), allocatable :: data(:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f32)        , intent(out), allocatable :: data(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(1))
-    datashape = getReadDataShape(self, 1, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1676,12 +1678,12 @@ contains
 
   subroutine getData2dF32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f32)         , intent(out), allocatable :: data(:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f32)        , intent(out), allocatable :: data(:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(2))
-    datashape = getReadDataShape(self, 2, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1690,12 +1692,12 @@ contains
 
   subroutine getData3dF32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f32)         , intent(out), allocatable :: data(:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f32)        , intent(out), allocatable :: data(:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(3))
-    datashape = getReadDataShape(self, 3, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1704,12 +1706,12 @@ contains
 
   subroutine getData4dF32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f32)         , intent(out), allocatable :: data(:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f32)        , intent(out), allocatable :: data(:,:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(4))
-    datashape = getReadDataShape(self, 4, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1718,12 +1720,12 @@ contains
 
   subroutine getData5dF32(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f32)         , intent(out), allocatable :: data(:,:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f32)        , intent(out), allocatable :: data(:,:,:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(5))
-    datashape = getReadDataShape(self, 5, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1732,9 +1734,9 @@ contains
 
   subroutine getDataScalarF64(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)             :: self
-    integer(i32)      , intent(in) , optional  :: start(:), cnt(:), stride(:), map(:)
-    real(f64)         , intent(out)            :: data
-    real(f64)                                  :: tmp(1)
+    integer(i32)     , intent(in) , optional  :: start(:), cnt(:), stride(:), map(:)
+    real(f64)        , intent(out)            :: data
+    real(f64)                                 :: tmp(1)
 
     call check (nf90_get_var(self%parent%id, self%id, tmp, start, cnt, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
@@ -1743,12 +1745,12 @@ contains
 
   subroutine getData1dF64(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f64)         , intent(out), allocatable :: data(:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f64)        , intent(out), allocatable :: data(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(1))
-    datashape = getReadDataShape(self, 1, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
     
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1757,12 +1759,12 @@ contains
 
   subroutine getData2dF64(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f64)         , intent(out), allocatable :: data(:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f64)        , intent(out), allocatable :: data(:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(2))
-    datashape = getReadDataShape(self, 2, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1771,12 +1773,12 @@ contains
 
   subroutine getData3dF64(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f64)         , intent(out), allocatable :: data(:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f64)        , intent(out), allocatable :: data(:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(3))
-    datashape = getReadDataShape(self, 3, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1785,12 +1787,12 @@ contains
 
   subroutine getData4dF64(self, data, start, cnt, stride, map)
     class(NcVariable), intent(in)               :: self
-    integer(i32)      , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
-    real(f64)         , intent(out), allocatable :: data(:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
+    real(f64)        , intent(out), allocatable :: data(:,:,:,:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(4))
-    datashape = getReadDataShape(self, 4, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1801,90 +1803,60 @@ contains
     class(NcVariable), intent(in)               :: self
     integer(i32)     , intent(in) , optional    :: start(:), cnt(:), stride(:), map(:)
     real(f64)        , intent(out), allocatable :: data(:,:,:,:,:)
-    integer(i32)                   , allocatable :: datashape(:)
+    integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
-    allocate(datashape(5))
-    datashape = getReadDataShape(self, 5, start, cnt, stride)
+    slcshape = self%getSlicingShape(start, cnt, stride)
+    datashape = self%getReadShape(slcshape, rank(data))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
          "Could not read data from variable: "//trim(self%getName()))
   end subroutine getData5dF64
 
-  subroutine setData2dI32(self, values, start, stop, step)
-    class(NcVariable), intent(in)            :: self
-    integer(i32)     , intent(in)            :: values(:,:)
-    integer(i32)     , intent(in), optional  :: start(:), stop(:), step(:)
-
-    ! call check( nf90_put_var(self%parent%id, self%id, values, start, cnt, stride, map), &
-    !      "Failed to write data into variable: " // trim(self%getName()))
-  end subroutine setData2dI32
-
-  function getSlicingShape(self, instart, instop, instep)
+  function getSlicingShape(self, instart, incnt, instride) result(out)
     class(NcVariable), intent(in)           :: self
-    integer(i32),      intent(in), optional :: instart(:), instop(:), instep(:)
-    integer(i32), allocatable               :: getSlicingShape(:)
+    integer(i32)     , intent(in), optional :: instart(:), incnt(:), instride(:)
+    integer(i32)     , allocatable          :: out(:)
 
-    ! Needs a test!!
-    ! when working use this for get ReadDataShape as well
+    out = self%getShape()
 
-    getSlicingShape = self%getShape()
-
-    if (present(instop)) then
-       ! the place to handle negative values
-       getSlicingShape(:size(instop)) = instop
-    end if
-
-    if (present(instart)) then
-       getSlicingShape(:size(instart)) = getSlicingShape(:size(instart)) - instart
-    end if
-
-    if (present(instep)) then
-       getSlicingShape(:size(instep)) = getSlicingShape(:size(instep)) / instep
-    end if
-
-  end function getSlicingShape
-
-  function getReadDataShape(var, datarank, instart, incnt, instride)
-    type(NcVariable), intent(in)           :: var
-    integer(i32)    , intent(in)           :: datarank
-    integer(i32)    , intent(in), optional :: instart(:), incnt(:), instride(:)
-    integer(i32)    , allocatable          :: readshape(:)
-    integer(i32)                           :: naxis
-    integer(i32)                           :: getReadDataShape(datarank)
-
-    readshape = var%getShape()
-    
     if (present(incnt)) then
-       ! this is buggy
-       readshape = incnt
+       out(:size(incnt)) = incnt
+       ! out = incnt
     else
        if (present(instart)) then
-          readshape(:size(instart)) = readshape(:size(instart)) - (instart - 1)
+          out(:size(instart)) = out(:size(instart)) - (instart - 1)
        end if
        if (present(instride)) then
-          readshape(:size(instride)) = readshape(:size(instride)) / instride
+          out(:size(instride)) = out(:size(instride)) / instride
        end if
     end if
+      
+  end function getSlicingShape
+
+  function getReadShape(self, slcshape, outrank) result(out)
+    class(NcVariable), intent(in) :: self
+    integer(i32),      intent(in) :: slcshape(:)
+    integer(i32)                  :: naxis, outrank
+    integer(i32), allocatable     :: out(:)
+
+    naxis = count(slcshape .gt. 1)
     
-    naxis = count(readshape .gt. 1)
-    
-    if (all(readshape .eq. 1)) then
+    if (all(slcshape .eq. 1)) then
        ! return 1-element array
-       getReadDataShape(:) = 1 !readshape(1:datarank+1)
-    else if (size(readshape) .eq. datarank) then
+       out(:) = 1
+    else if (size(slcshape) .eq. outrank) then
        ! sizes fit
-       getReadDataShape = readshape
-    else if (naxis .eq. datarank) then
-       getReadDataShape = pack(readshape, readshape .gt. 1)
-    ! else if (naxis .lt. datarank) then
+       out = slcshape
+    else if (naxis .eq. outrank) then
+       out = pack(slcshape, slcshape .gt. 1)
+    ! else if (naxis .lt. outrank) then
        ! would be nice...
     else
-       write(*,*) "Given data reading parameters do not match output variable rank!"
+       write(*,*) "Given indices do not match output variable rank!"
        stop 1
     end if
-       
-  end function getReadDataShape
+  end function getReadShape
 
   function getDtypeFromString(dtype)
     integer(i32)          :: getDtypeFromString
