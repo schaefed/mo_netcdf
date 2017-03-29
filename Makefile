@@ -5,22 +5,24 @@ FCFLAGS = -Wall
 INCLUDE  = /usr/include
 LDFLAGS  = netcdff
 
-OBJDIR   = build
-OBJFILES = $(addprefix $(OBJDIR)/, mo_types.o mo_netcdf.o)
+SRCDIR      = src
+OBJDIR      = build
+TESTDIR     = tests
+EXAMPLEDIR  = examples
+TMPDIR      = tmp
 
-TESTDIR      = tests
-TMPDIR       = tmp
-TESTOBJFILES = $(addprefix $(TMPDIR)/, mo_string.o mo_assert.o mo_testhelper.o)
-TESTFILES    = $(patsubst $(TESTDIR)/%.f90, $(TMPDIR)/%, $(wildcard $(TESTDIR)/test_*.f90))
+OBJFILES = $(patsubst $(SRCDIR)/%.f90, $(OBJDIR)/%.o, $(addprefix $(SRCDIR)/, mo_types.f90 mo_netcdf.f90))
 
-EXAMPLEDIR   = examples
-EXAMPLEFILES = $(patsubst $(EXAMPLEDIR)/%.f90, $(TMPDIR)/%, $(wildcard $(EXAMPLEDIR)/*.f90))
+TESTOBJFILES = $(patsubst $(TESTDIR)/%.f90, $(TMPDIR)/%.o, $(addprefix $(TESTDIR)/, mo_string.f90 mo_assert.f90 mo_testhelper.f90)) 
+TESTEXE      = $(patsubst $(TESTDIR)/%.f90, $(TMPDIR)/%, $(wildcard $(TESTDIR)/test_*.f90))
+
+EXAMPLEXE   = $(patsubst $(EXAMPLEDIR)/%.f90, $(TMPDIR)/%, $(wildcard $(EXAMPLEDIR)/*.f90))
 
 all: $(OBJDIR) $(OBJFILES)
 
-test: all $(TMPDIR) $(TESTOBJFILES) $(TESTFILES)
+test: all $(TMPDIR) $(TESTOBJFILES) $(TESTEXE)
 
-examples: all $(TMPDIR) $(EXAMPLEFILES)
+examples: all $(TMPDIR) $(EXAMPLEXE)
 
 clean:
 	rm -r $(OBJDIR) $(TMPDIR)
@@ -30,7 +32,7 @@ $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
 # build the module
-$(OBJDIR)/%.o : %.f90
+$(OBJDIR)/%.o : $(SRCDIR)/%.f90
 	$(FC) -c $(FCFLAGS) -I$(INCLUDE) -J$(OBJDIR) -o $@ $< -l$(LDFLAGS)
 
 # create directory
