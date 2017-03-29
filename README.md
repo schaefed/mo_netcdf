@@ -1,20 +1,20 @@
-#mo_netcdf
+## mo_netcdf
 
-#General
+## General
 A object-oriented wrapper around the NetCDF Fortran 90 interface.
 
-#Requirements
+## Requirements
 - NetCDF fortran 90 interface
 - A Fortran2003 compatible compiler
 
-#Compiler support
+## Compiler support
 The module is tested to work with the following compilers:
 - GNU gfortran 4.8
 - ~~Intel ifort 13.1~~
 - NAG nagfor 6.0
 - PGI pgfortran 15.9
 
-#Usage
+## Usage
 The below examples can be found in the examples folder.
 
 Write a netcdf file:
@@ -158,7 +158,7 @@ call nc %getAttribute('author', author1)
 call nc%close()
 ```
 
-# Restrictions
+## Restrictions
 The current implementation provides a subset of the NetCDF Fortran 90 interface as 
 described in the [User's Guide](http://www.unidata.ucar.edu/software/netcdf//old_docs/docs_4_1_1/netcdf-f90.pdf).
 Some of the current restrictions:
