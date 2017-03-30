@@ -4,12 +4,14 @@ module mo_string
 
   implicit none
  
+  integer(i32), parameter :: length = 256
+
   interface toString
      module procedure toStringI32
   end interface toString
 
   type String
-     character(:), allocatable :: data
+     character(length), allocatable :: data
 
      contains
        procedure, public :: get
@@ -35,11 +37,7 @@ contains
     character(len=*), intent(in) :: arg
     type(String)                 :: out
 
-    ! if (present(arg)) then
     out%data = arg
-    ! else
-    !    out%data = ""
-    ! end if
   end function newStringChar
 
   function newStringI32(arg) result(out)
@@ -54,7 +52,7 @@ contains
     class(String), intent(in) :: left, right
     type(String) :: out
 
-    out = String(left%data//right%data)
+    out = String(trim(left%data)//trim(right%data))
   end function concatStringString
   
   function concatStringChar(left, right) result(out)
@@ -62,7 +60,7 @@ contains
     character(len=*), intent(in) :: right
     type(String) :: out
 
-    out = String(left%data//right)
+    out = String(trim(left%data)//trim(adjustl(right)))
   end function concatStringChar
 
 
@@ -70,13 +68,13 @@ contains
     class(String), intent(in) :: self
     character(:), allocatable :: out
     
-    out = self%data
+    out = trim(self%data)
   end function get
 
   subroutine printString(str)
     type(String), intent(in) :: str
 
-    print*, str%get()
+    print*, trim(str%get())
   end subroutine printString
 
   function joinStrings(strings, sep) result(out)
@@ -105,7 +103,7 @@ contains
 
   function toStringI32(arg) result(out)
     integer(i32), intent(in) :: arg
-    character(len=256)       :: out
+    character(len=length)    :: out
     write (out, *) arg
   end function toStringI32
 
