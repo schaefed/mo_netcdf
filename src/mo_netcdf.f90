@@ -1424,7 +1424,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1438,7 +1438,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1452,7 +1452,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1466,7 +1466,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1480,7 +1480,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1505,7 +1505,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1519,7 +1519,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1533,7 +1533,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1547,7 +1547,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape( start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1561,7 +1561,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1586,7 +1586,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
     
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
     
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1600,7 +1600,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1614,7 +1614,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1628,7 +1628,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1642,7 +1642,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1667,7 +1667,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1681,7 +1681,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1695,7 +1695,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1709,7 +1709,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1723,7 +1723,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1748,7 +1748,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
     
     allocate(data(datashape(1)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1762,7 +1762,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1776,7 +1776,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1790,7 +1790,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
@@ -1804,7 +1804,7 @@ contains
     integer(i32)                  , allocatable :: slcshape(:), datashape(:)
 
     slcshape = self%getSlicingShape(start, cnt, stride)
-    datashape = getReadShape(slcshape, rank(data))
+    datashape = getReadShape(slcshape, size(shape(data)))
 
     allocate(data(datashape(1), datashape(2), datashape(3), datashape(4), datashape(5)))
     call check (nf90_get_var(self%parent%id, self%id, data, start, cnt, stride, map), &
