@@ -387,53 +387,53 @@ module mo_netcdf
 
 contains
 
-  function newNcDataset(fname, fmode, cmode)
+  function newNcDataset(fname, fmode, cmode) result(out)
     character(*), intent(in)              :: fname
     character(1), intent(in)              :: fmode
     character(*), intent(inout), optional :: cmode
     integer(i32)                          :: status
-    type(NcDataset)                       :: newNcDataset
+    type(NcDataset)                       :: out
     
     select case(fmode)
     case("w")
-       status = nf90_create(trim(fname), getCreationMode(cmode), newNcDataset%id)
+       status = nf90_create(trim(fname), getCreationMode(cmode), out%id)
     case("r")
-       status = nf90_open(trim(fname), NF90_NOWRITE, newNcDataset%id)
+       status = nf90_open(trim(fname), NF90_NOWRITE, out%id)
     case("a")
-       status = nf90_open(trim(fname), NF90_WRITE, newNcDataset%id)
+       status = nf90_open(trim(fname), NF90_WRITE, out%id)
     case default
        write(*,*) "Mode argument must be in 'w','r','a' ! "
        stop 1
     end select
     call check(status,"Failed to open file: " // fname)
 
-    newNcDataset%fname = fname
-    newNcDataset%mode  = fmode
+    out%fname = fname
+    out%mode  = fmode
   end function newNcDataset
 
-  function newNcVariable(id, parent)
+  function newNcVariable(id, parent) result(out)
     integer(i32) , intent(in) :: id
     type(NcGroup), intent(in) :: parent
-    type(NcVariable)          :: newNcVariable
+    type(NcVariable)          :: out
 
-    newNcVariable%id     = id
-    newNcVariable%parent = parent
+    out%id     = id
+    out%parent = parent
   end function newNcVariable
 
-  function newNcDimension(id, parent)
+  function newNcDimension(id, parent) result(out)
     integer(i32) , intent(in) :: id
     type(NcGroup), intent(in) :: parent
-    type(NcDimension)         :: newNcDimension   
+    type(NcDimension)         :: out   
 
-    newNcDimension%id     = id
-    newNcDimension%parent = parent
+    out%id     = id
+    out%parent = parent
   end function newNcDimension
 
-  function newNcGroup(id)
+  function newNcGroup(id) result(out)
     integer(i32)    , intent(in) :: id
-    type(NcGroup)                :: newNcGroup 
+    type(NcGroup)                :: out 
 
-    newNcGroup%id = id
+    out%id = id
   end function newNcGroup
 
   subroutine sync(self)
@@ -562,11 +562,11 @@ contains
     getUnlimitedDimension = self%getDimension(dimid)
   end function getUnlimitedDimension
 
-  function equalNcBases(left, right)
+  function equalNcBases(left, right) result(out)
     class(NcBase), intent(in) :: left, right
-    logical                   :: equalNcBases
+    logical                   :: out
     
-    equalNcBases = (left%id .eq. right%id)
+    out = (left%id .eq. right%id)
   end function equalNcBases
 
   function isUnlimitedDimension(self)
