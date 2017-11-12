@@ -11,7 +11,7 @@ A object-oriented wrapper around the NetCDF Fortran 90 interface.
 The module is tested to work with the following compilers:
 - GNU gfortran 4.8/5.4
 - Intel ifort 15.0.1/17.0.2
-- ~~NAG nagfor 6.0~~
+- NAG nagfor 6.0
 
 ## Usage
 The below examples can be found in the examples folder.
