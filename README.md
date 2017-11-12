@@ -13,6 +13,9 @@ The module is tested to work with the following compilers:
 - Intel ifort 15.0.1/17.0.2
 - NAG nagfor 6.0
 
+### Older intel compilers
+The support of ifort/13.1 was dropped because of this [bug](https://software.intel.com/en-us/forums/intel-visual-fortran-compiler-for-windows/topic/537784).
+
 ## Usage
 The below examples can be found in the examples folder.
 
