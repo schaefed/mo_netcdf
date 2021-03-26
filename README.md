@@ -26,7 +26,7 @@ use mo_netcdf, only: NcDataset, NcDimension, NcVariable, NcGroup
 
 type(NcDataset)   :: nc
 type(NcDimension) :: dim1, dim2, dim3
-type(NcVariable)  :: var
+type(NcVariable)  :: var, scalar
 type(NcGroup)     :: grp
 
 ! some data
@@ -59,8 +59,9 @@ dim3 = grp%setDimension("x", nx)
 ! args:
 !     variable name
 !     data type (currently available: "i8", "i16", "i32", "f32", "f64")
-!     dimensions array
+!     dimensions array (optional: skip for a scalar)
 var = grp%setVariable("data", "i32", (/dim3, dim2, dim1/))
+scalar = grp%setVariable("scalar", "i32")
 
 ! define a fill value
 ! args:
