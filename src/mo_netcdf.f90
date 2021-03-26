@@ -130,11 +130,13 @@ module mo_netcdf
      procedure, private :: setVariableWithTypes
      procedure, private :: setVariableWithNames
      procedure, private :: setVariableWithIds
+     procedure, private :: setVariableScalar
 
      generic,   public  :: setVariable => &
           setVariableWithNames, &
           setVariableWithTypes, &
-          setVariableWithIds
+          setVariableWithIds, &
+          setVariableScalar
 
   end type NcGroup
 
@@ -702,6 +704,18 @@ contains
          chunksizes, deflate_level, shuffle, fletcher32, endianness, &
          cache_size, cache_nelems, cache_preemption)
   end function setVariableWithTypes
+
+  function setVariableScalar(self, name, dtype)
+    class(NcGroup)  , intent(in)           :: self
+    character(*)    , intent(in)           :: name
+    character(*)    , intent(in)           :: dtype
+    type(NcVariable)                       :: setVariableScalar
+    integer(i32)                           :: varid, status
+
+    status = nf90_def_var(self%id, name, getDtypeFromString(dtype), varid=varid)
+    call check(status, "Failed to create variable: " // name)
+    setVariableScalar = NcVariable(varid, self)
+  end function setVariableScalar
 
   function getDimensionById(self, id)
     class(NcGroup), intent(in) :: self

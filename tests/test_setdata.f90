@@ -7,7 +7,7 @@ program test_putdata
   use mo_testhelper
   
   type(NcDataset)   :: nc
-  type(NcVariable)  :: var
+  type(NcVariable)  :: var, scalar
 
   integer(i32), parameter   :: nx=10, ny=20, ntime=8
   integer(i32)              :: val
@@ -21,11 +21,17 @@ program test_putdata
        "i32",  &
        [nc%setDimension("x", nx), nc%setDimension("y", ny), nc%setDimension("time")] &
   )
+  scalar = nc%setVariable("scalar", "i32")
 
   ! set and get a single value
   ! i.e. (5,5)
   call var%setData(42, start=[5,5])
   call var%getData(val, start=[5,5])
+  call assertEqual(val, 42, "Failed to set a scalar value!")
+
+  ! set and get a scalar
+  call scalar%setData(42)
+  call scalar%getData(val)
   call assertEqual(val, 42, "Failed to set a scalar value!")
 
   ! set and get the all values for the first row in the third timestep
