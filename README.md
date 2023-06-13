@@ -163,7 +163,7 @@ call nc%close()
 
 ## Restrictions
 The current implementation provides a subset of the NetCDF Fortran 90 interface as 
-described in the [User's Guide](http://www.unidata.ucar.edu/software/netcdf//old_docs/docs_4_1_1/netcdf-f90.pdf).
+described in the [User's Guide](https://docs.unidata.ucar.edu/netcdf-fortran/current/f90_The-NetCDF-Fortran-90-Interface-Guide.html).
 Some of the current restrictions:
   - Dataset fill mode settings (```nf90_set_fill```)
   - Full group names (```nf90_inq_grpname_full```)
